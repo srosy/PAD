@@ -1,0 +1,54 @@
+﻿.ValidationWrapper {
+    margin-top: 1vh;
+}
+
+.validation-message {
+    color: white !important;
+}
+
+.FormWrapper {
+    background-color: var(--background);
+    color: var(--text);
+    border: solid;
+    border-color: var(--border);
+    border-width: 1vw;
+    margin-right: 1em;
+    margin-left: 1em;
+    margin-bottom: 1em;
+    padding-bottom: 2vh;
+    padding-right: 32vw;
+    padding-left: 32vw;
+    text-align: center;
+}
+
+.NewProjectForm {
+    text-align: left;
+}
+
+.FieldLabel {
+    font-size: 2em;
+}
+
+.InputField {
+    width: 100%;
+}
+
+.NewProjectFormButtonWrapper {
+    text-align: center;
+}
+
+.CreateButton {
+    font-size: 2em;
+    margin-top: 2vh;
+    padding-left: 1vw;
+    padding-right: 1vw;
+    color: var(--text);
+    background-color: var(--button);
+    border: solid;
+    border-color: var(--border);
+    border-width: .5vw;
+}
+
+.CreateButton:hover {
+    background-color: var(--button-highlight);
+}

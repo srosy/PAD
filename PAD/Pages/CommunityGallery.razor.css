@@ -1,0 +1,104 @@
+﻿.PageHeader {
+    width: 100%;
+    position: absolute;
+}
+
+.GallerySortContainer {
+    color: white;
+    background-color: var(--box-background);
+    margin-top: 3vh;
+    margin-left: 1em;
+    padding-top: .75em;
+    padding-inline: .75em;
+    width: 15%;
+}
+
+.GridContainer {
+    margin-top: 0 !important;
+}
+
+.Reaction {
+    height: 30px;
+    width: 30px;
+    display: inline-block;
+    height: auto;
+}
+
+.ReactionContainer {
+    display: inline-block;
+    height: auto;
+    border: 3px solid transparent;
+    width: 15%;
+}
+
+.CommentTitle {
+    position: absolute;
+    top: 3%;
+    left: 4%;
+    width: 22%;
+    text-align: center;
+    color: rgb(128, 128, 128, .5);
+}
+
+.CommentList {
+    position: absolute;
+    top: 8%;
+    left: 4%;
+    margin: 4px, 4px;
+    padding: 4px;
+    padding-left: 2%;
+    width: 22%;
+    height: 84%;
+    border-left: 3px solid rgb(128, 128, 128, .5);
+    border-top: 3px solid rgb(128, 128, 128, .5);
+    overflow-x: hidden;
+    overflow-y: auto;
+    text-align: justify;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+    .CommentList::-webkit-scrollbar {
+        display: none;
+    }
+
+    .CommentList h1 {
+        font-size: 14pt;
+    }
+
+.CommentBlock {
+    border: solid 2px white;
+    border-radius: 20px;
+    padding: 20px;
+}
+
+.CommentIcon {
+    height: 30px;
+    width: 30px;
+}
+
+#Plus {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 5em;
+    line-height: 0.75;
+    margin-top: -20px;
+    font-weight: bold;
+    color: rgb(128, 128, 128, .5);
+}
+
+    #Plus:hover {
+        color: white;
+    }
+
+.CommentInput {
+    margin-top: 10px;
+    width: 100%;
+    max-width: 100%;
+}
+
+.CommentSubmit {
+    margin-top: 10px;
+}

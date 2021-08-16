@@ -1,0 +1,69 @@
+﻿.blazored-toast-container {
+    display: inline !important;
+    left: 3% !important;
+    top: 11% !important;
+    width: 10vw;
+}
+
+.InfoContainer {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    margin: 1em;
+    font-size: 1.25em;
+    color: white;
+}
+
+.PfpContainer {
+    background-color: var(--accent);
+    text-align: center;
+    padding: 1em;
+    border: solid;
+    border-color: var(--box-background);
+    border-width: 1vw;
+}
+
+    /* hover effect and hovertext for pfp */
+    .Pfp_Preview {
+
+    }
+    
+    .PfpContainer:hover, .Pfp_Preview {
+
+    }
+
+.PfpImage {
+    border: solid;
+    border-color: var(--box-background);
+    border-width: .5em;
+    background-color: black;
+    max-height: 25vh;
+    max-width: 25vw;
+}
+
+.FieldsContainer {
+    background-color: var(--accent);
+    padding: .25em;
+    border: solid;
+    border-color: var(--box-background);
+    border-width: 1vw;
+}
+
+.ProfileInfoForm {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.Inputs input {
+    width: 30vw;
+}
+
+.UpdateButton {
+    margin-top: 5vh;
+}
+
+.EncryptedButtonContainer {
+    float: left;
+    margin-top: 2em;
+    margin-left: .5em;
+    margin-bottom: .25em;
+}

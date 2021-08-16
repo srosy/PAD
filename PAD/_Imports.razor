@@ -1,0 +1,53 @@
+﻿@using System.Net.Http
+@using System.Security.Claims
+@using System.Timers
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.Extensions.Logging
+
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.JSInterop
+
+@using Newtonsoft.Json
+@using Newtonsoft.Json.Linq
+@using Newtonsoft.Json.Converters
+
+@using PAD
+@using PAD.Data;
+@using PAD.Shared
+@using PAD.Data.Models
+@using PAD.Pages.Components
+@using PAD.Shared.ViewModels
+
+@using MatBlazor
+@using BlazorInputFile
+@using System.Drawing
+@using Blazored.TextEditor
+@using Blazored.LocalStorage
+@using Radzen
+@using Radzen.Blazor
+@using Blazored.Toast
+@using Blazored.Toast.Services
+@using Blazor.Extensions
+@using Blazor.Extensions.Canvas
+@using Blazor.Extensions.Canvas.Canvas2D
+@using Blazor.Extensions.Canvas.Model
+@using Blazor.Extensions.Canvas.WebGL
+
+@inject IDbService DB
+@inject IJSRuntime JS
+@inject HttpClient HTTP
+@inject NavigationManager NAV
+@inject ILocalStorageService STORAGE
+@inject AuthenticationStateProvider AUTH
+@inject UserManager<IdentityUser> USER
+@inject IColorService COLOR
+@inject IWebpConverter WEBP
+@inject IToastService TOAST
+@inject ICryptographyService CRYPT 
+@inject ILogger LOG

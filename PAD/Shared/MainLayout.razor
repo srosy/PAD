@@ -1,0 +1,50 @@
+﻿@inherits LayoutComponentBase
+
+<CascadingValue Value="this">
+    <div class="MainLayoutWrapper @_theme">
+        <div class="page">
+            <TopNavMenu />
+            @*<div class="sidebar">
+                <NavMenu />
+            </div>*@
+            <div class="main">
+                <div class="content px-4">
+                    @Body
+                </div>
+            </div>
+        </div>
+        <div class="watermark">
+            <h3 class="text-right">Team</h3>
+            <img src="https://pixelartdesigner.blob.core.windows.net/images/Rubber_Duck.webp" alt="Team Logo" />
+        </div>
+    </div>
+    <div class="toast-message">
+        <BlazoredToasts />
+    </div>
+</CascadingValue>
+
+@code
+{
+    private string _theme;
+    public string Theme
+    {
+        get { return _theme; }
+        set
+        {
+            _theme = value;
+            UpdateThemeStorage();
+            StateHasChanged();
+        }
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        var theme = await BrowserStorage<string>.GetObject("theme", STORAGE);
+        _theme = theme;
+    }
+
+    private async Task UpdateThemeStorage()
+    {
+        await BrowserStorage<string>.SaveObject("theme", _theme, STORAGE);
+    }
+}

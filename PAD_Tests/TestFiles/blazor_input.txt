@@ -1,0 +1,38 @@
+[DataType(DataType.Url)] public string ProfileImageUrl { get; set; } -- model
+
+
+
+- .razor below
+
+
+<div class="form-group ">
+	<label for="profile-image-upload" class="LMS-form-label">Profile Picture</label>
+	<InputFile id="profile-image-upload" OnChange="UploadImageOnChange" title="Upload a profile image" />
+	<small class="input-file-message @(_fileMessage.ToLower().Contains("select") ? "text-danger" : "text-success")">@_fileMessage</small>
+</div>
+
+
+@if (!string.IsNullOrEmpty(Model.Settings.ProfileImageUrl))
+{
+	<div class="col-md-6">
+		<img class="settings-profile-img" src="@Model.Settings.ProfileImageUrl" />
+	</div>
+}
+
+private string _fileMessage = "No file selected";
+
+/// <summary>
+/// Handles when a new Profile Image is uploaded.
+/// </summary>
+/// <param name="files"></param>
+/// <returns></returns>
+private async Task UploadImageOnChange(IFileListEntry[] files)
+{
+	var file = files.FirstOrDefault();
+	_fileMessage = file.Name;
+	var fileBytes = await LMS_Image.ConvertFileToByteArray(file);
+	var azureStorage = new AzureStorage();
+	Model.Settings.ProfileImageUrl = await azureStorage.UploadFile(file.Name, fileBytes, Model.Account.AccountId);
+}
+
+

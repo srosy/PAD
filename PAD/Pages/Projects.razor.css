@@ -1,0 +1,45 @@
+﻿.NewProjectContainer {
+    background-color: var(--accent);
+    height: 35vh;
+}
+
+.NewProjectCaption {
+    font-size: 3em;
+    font-weight: bold;
+    text-align: center;
+    color: white;
+    height: 20%;
+}
+
+.NewProjectButtonWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-flow: column;
+    height: 80%;
+    
+}
+
+.NewProjectButton {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 5em;
+    line-height: 0;
+    font-weight: bold;
+    color: var(--text);
+    width: 8vw;
+    height: 8vw;
+    background-color: var(--button);
+    border: solid;
+    border-color: var(--border);
+    border-width: .5vw;
+}
+
+.NewProjectButton:hover {
+    background-color: var(--button-highlight);
+}
+
+.project-a {
+    text-decoration: none !important;
+}

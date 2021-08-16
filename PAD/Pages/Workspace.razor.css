@@ -1,0 +1,150 @@
+﻿.WorkspaceHeader {
+    margin-left: .15em;
+}
+
+.WorkspaceGrid {
+    width: 100%;
+    height: 80vh;
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr;
+    text-align: center;
+}
+
+.Toolbar {
+    background-color: #B63F83;
+    border: solid;
+    border-color: #47195D;
+    border-width: 1em;
+}
+
+.LefthandToolbar {
+}
+
+.ArtGrid {
+    background-color: #731F7A;
+    border: solid;
+    border-color: #47195D;
+    border-top-width: 1em;
+    border-bottom-width: 1em;
+    border-left-width: 0;
+    border-right-width: 0;
+}
+
+.RighthandToolbar {
+}
+
+.w-button {
+    font-size: 2em;
+    font-weight: bold;
+    color: var(--text);
+    width: 8vw;
+    background-color: var(--button);
+    border: solid;
+    border-color: var(--border);
+    border-width: .5vw;
+    cursor: pointer;
+}
+
+.w-button:hover {
+    background-color: var(--button-highlight);
+}
+
+.brush-size {
+    margin-top: 2vh;
+}
+
+/*Update below to custom duck pointers (30px by 30px)*/
+.paintbrush {
+    cursor: url('https://pixelartdesigner.blob.core.windows.net/images/paintbrush.cur'), auto;
+}
+
+.paintarrow {
+    cursor: default;
+}
+
+.paintbucket {
+    cursor: url('https://pixelartdesigner.blob.core.windows.net/images/bucket.cur'), auto;
+}
+
+.painthand {
+    cursor: pointer;
+}
+
+.painteyedropper {
+    cursor: url('https://pixelartdesigner.blob.core.windows.net/images/eyedropper.cur'), auto;
+}
+
+.paintstamp {
+    cursor: url('https://pixelartdesigner.blob.core.windows.net/images/eyedropper.cur'), auto;
+}
+
+.ToolContextMenuContainer {
+    background-color: var(--background);
+    border: solid;
+    border-color: var(--border);
+    border-width: .5vw;
+    margin-right: 5%;
+    margin-left: 5%;
+    width: 90%;
+    height: 30vh;
+}
+
+.StampMenu {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-gap: .5em;
+    width: 100%;
+    height: 100%;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+    .StampMenu::-webkit-scrollbar {
+        display: none;
+    }
+
+.StampItemContainer {
+    height: auto;
+    text-align: center;
+}
+    .StampItemContainer:hover {
+        background-color: var(--button-highlight);
+    }
+
+.StampIcon {
+    height: 8vh;
+    max-width: 100%;
+    object-fit: cover;
+}
+
+.SelectedStampIcon {
+    height: 8vh;
+    max-width: 100%;
+    object-fit: cover;
+    background-color: var(--text);
+}
+
+.TransformationContainer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: .5em;
+    width: 100%;
+    height: 100%;
+}
+
+.TransformationOption {
+    background-color: var(--accent);
+    color: var(--text);
+    font-size: 2em;
+    display: table;
+    text-align: center;
+}
+
+    .TransformationOption:hover {
+        cursor: pointer;
+        background-color: var(--button-highlight);
+    }
+
+.TransformationOptionSpan {
+    display: table-cell;
+    vertical-align: middle;
+}

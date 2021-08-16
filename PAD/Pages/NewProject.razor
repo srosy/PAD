@@ -1,0 +1,83 @@
+﻿@page "/newproject";
+
+<div class="PageWrapper">
+
+    @if (_model.Loading)
+    {
+        <Loading />
+    }
+    else
+    {
+        <AuthorizeView>
+            <Authorized Context="Auth">
+                <h1 class="PageHeader">Create A New Project</h1>
+                <div class="FormWrapper">
+                    <EditForm Model="@_project" OnValidSubmit="@CreateNewProject">
+                        <DataAnnotationsValidator />
+                        <div class="ValidationWrapper">
+                            <ValidationSummary />
+                        </div>
+                        <div class="NewProjectForm">
+                            <label class="FieldLabel" for="DisplayName">Display Title: </label>
+                            <InputText id="DisplayTitle" class="form-control InputField" @bind-Value="_project.DisplayTitle" />
+                            <label class="FieldLabel" for="Name">Grid Size (rows x cols): </label>
+                            <InputText id="Name" class="form-control InputField" @bind-Value="_project.GridSize" placeholder="Must be in 5x5, 25x25 ... 100x100 format"/>
+                            <label class="FieldLabel" for="Name">Description: </label>
+                            <InputTextArea id="Description" class="form-control InputField" @bind-Value="_project.Description" />
+                            <div class="NewProjectFormButtonWrapper">
+                                <button type="submit" class="CreateButton">Create New Project</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <h1>Must Be Logged In To Create A New Project</h1>
+            </NotAuthorized>
+        </AuthorizeView>
+    }
+</div>
+
+@code {
+
+    private Project _project = new();
+    NewProjectViewModel _model = new NewProjectViewModel();
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _model.Session = new Session(STORAGE, AUTH, USER, DB);
+            _model.Account = await _model.Session.GetAccount();
+            if (_model.Account == null)
+            {
+                await DoneLoading();
+                return;
+            }
+
+            await DoneLoading();
+        }
+    }
+
+    private async Task DoneLoading()
+    {
+        _model.Loading = false;
+        StateHasChanged();
+    }
+
+    private async Task CreateNewProject()
+    {
+        _project.Name = Guid.NewGuid().ToString();
+        _project.AccountId = _model.Account.AccountId;
+        _project.CreateDate = DateTime.UtcNow;
+        _project.GridSize = _project.GridSize.Replace(" ", String.Empty);
+        var projectAdded = await DB.AddProjectAsync(_project);
+        await JS.InvokeVoidAsync("Toast", new[] { projectAdded ? "success" : "error",
+                                     projectAdded ? _project.DisplayTitle + " Successfully Created!" :
+                                     "Error: " + _project.DisplayTitle + " Could Not Be Created.", "3000" });
+        if (projectAdded)
+        {
+            NAV.NavigateTo("projects");
+        }
+    }
+}

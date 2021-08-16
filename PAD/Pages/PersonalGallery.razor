@@ -1,0 +1,112 @@
+﻿@page "/personalgallery";
+
+@if (_model.Loading)
+{
+    <Loading />
+}
+else
+{
+    <div class="PageWrapper">
+        <AuthorizeView>
+            <Authorized>
+                <h1 class="PageHeader">@context.User.Identity.Name.Split("@")[0]'s Gallery</h1>
+                @if (_model.ImageList == null || _model.ImageList.Count == 0)
+                {
+                    <div class="EmptyGalleryWrapper">
+                        <div class="EmptyGalleryContainer">
+                            <h1>You Do Not Have Any Published Images</h1>
+                            <br />
+                            <a href="/projects" class="EmptyRedirectLink">
+                                Click Here To Create A New Project Or Publish a Saved One!
+                            </a>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="GridContainer">
+                        @foreach (var image in _model.JoinList)
+                        {
+                            <div class="ItemContainer">
+                                <div class="ItemThumbnailContainer">
+                                    <img class="ItemThumbnail" src="@(image.Url)"  @onclick="() => ShowModal(image.Url)"/>
+                                </div>
+                                <div class="ItemTitle">
+                                    @image.DisplayTitle <br />
+                                    Published: @image.CreateDate <br />
+                                    @if (image.UpdateDate != null)
+                                    {
+                                        <div>Last Updated: @image.UpdateDate</div><br />
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </Authorized>
+            <NotAuthorized>
+                <h1>Must Be Logged In To View Your Gallery</h1>
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
+}
+<!-- The Modal -->
+<div id="myModal" class="modal">
+    <span class="close" @onclick="() => HideModal()">&times;</span>
+    <img class="modal-content" id="img01">
+</div>
+
+@code {
+
+    private PersonalGalleryViewModel _model = new PersonalGalleryViewModel();
+
+    protected async override Task OnInitializedAsync()
+    {
+        await Setup();
+    }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _model.Session = new Session(STORAGE, AUTH, USER, DB);
+            _model.Account = await _model.Session.GetAccount();
+            if (_model.Account == null)
+            {
+                await DoneLoading();
+                return;
+            }
+
+            _model.ImageList = await DB.GetImageListAsync(_model.Account.AccountId);
+            _model.ProjectList = await DB.GetProjectListAsync(_model.Account.AccountId);
+
+            _model.JoinImagesAndProjects();
+
+            await DoneLoading();
+        }
+    }
+
+    private async Task Setup()
+    {
+        _model.BaseImageUrl = COLOR.BASE_IMAGE_URL;
+    }
+
+    private async Task DoneLoading()
+    {
+        _model.Loading = false;
+        StateHasChanged();
+    }
+
+    [Inject]
+    public IJSRuntime JSRuntime { get; set; }
+    public async Task ShowModal(string imgURL)
+    {
+        await JSRuntime.InvokeVoidAsync("showModal", imgURL);
+    }
+
+    public async Task HideModal()
+    {
+        await JSRuntime.InvokeVoidAsync("hideModal");
+    }
+
+}

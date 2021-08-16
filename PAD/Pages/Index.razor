@@ -1,0 +1,153 @@
+﻿@page "/"
+@page "/home"
+
+@if (_model.Loading)
+{
+    <Loading />
+}
+else
+{
+    <body>
+        <div class="header">
+            <AuthorizeView>
+                <Authorized>
+                    <div class="header-button-container">
+                        <a class="btn btn-primary btn-home" href="/projects">@(_model.HasProjects ? "Resume Drawing!" : "Start Desigining Now!")</a>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <div class="header-button-container">
+                        <a class="btn btn-primary btn-home" href="/Identity/Account/Register">Start Designing Now</a>
+                    </div>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+        <div class="carousel-container">
+            <AuthorizeView>
+                <Authorized>
+                    <h3 class="text-center text-bold welcome-text">
+                        Welcome @context.User.Identity.Name.Split("@")[0]
+                    </h3>
+                </Authorized>
+            </AuthorizeView>
+            <h3 class="text-black text-center">Check out these other artists' work in our Community Gallary Showcase!</h3>
+            <div class="row">
+                <div class="col-sm-8">
+                    <HomeCarousel />
+                </div>
+                <div class="community-gallery-button text-center">
+                    <button class="btn btn-primary btn-lg"
+                            @onclick="@(() => { NAV.NavigateTo("communitygallery"); })">
+                        &nbsp;View More Pixel Art Creations!&nbsp;
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="project-showcase">
+            <div class="row">
+                <div class="col">
+                    <div class="project-showcase-text">
+                        <h4>
+                            <strong>Pixel Art Designer (PAD) </strong>is an amazing pixel art drawing application. PAD allows you to use custom pallets, custom brushes, animation,
+                            and rotation features in your art creation. The art work can be easily exported from PAD into local files in your device!
+                            All these features while being completely free to anyone.
+                        </h4>
+                    </div>
+                </div>
+                <div class="col">
+                    @if (_model.HasProjects)
+                    {
+                        <a href="/workspace/@_model.ResumeProjId">
+                            <img class="zoom-5" src="@(_model.BaseImageUrl)workspace.webp" />
+                        </a>
+                        <h1 class="text-danger text-md-center">Click to resume drawing!</h1>
+                    }
+                    else
+                    {
+                        <img src="@(_model.BaseImageUrl)workspace.webp" />
+                        <h1 class="text-danger text-md-center">Workspace</h1>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="home-sociallinks">
+            <h4 class="social-text"> Follow Us!</h4>
+            <a href="https://www.youtube.com/pewdiepie" target="_blank" rel="noopener noreferrer" class="fa fa-youtube zoom-15"></a>
+            <a href="https://twitter.com/" target="_blank" rel="noopener noreferrer" class="fa fa-twitter zoom-15"></a>
+            <a href="https://instagram.com/" target="_blank" rel="noopener noreferrer" class="fa fa-instagram zoom-15"></a>
+        </div>
+    </body>
+}
+
+@code{
+    [CascadingParameter]
+    public MainLayout Layout { get; set; }
+
+    private IndexViewModel _model = new IndexViewModel();
+
+    protected async override Task OnInitializedAsync()
+    {
+        await Setup();
+    }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _model.Session = new Session(STORAGE, AUTH, USER, DB);
+            _model.Account = await _model.Session.GetAccount();
+            if (_model.Account == null)
+            {
+                await DoneLoading();
+                return;
+            }
+
+            // setup stuff based off of auth and cookie
+            var projects = await BrowserStorage<List<Project>>.GetObject("projects", STORAGE);
+            if (projects == null)
+            {
+                projects = await DB.GetProjectListAsync(_model.Account.AccountId);
+                if (projects?.Count > 0)
+                {
+                    _model.ResumeProjId = projects.OrderBy(p => p.UpdateDate).First().ProjectId;
+                    if (projects != null && projects.Any())
+                    {
+                        await BrowserStorage<List<Project>>.SaveObject("projects", projects, STORAGE);
+                    }
+                }
+            }
+            _model.ResumeProjId = projects.OrderBy(p => p.UpdateDate).First().ProjectId;
+
+            // dark mode initializers
+            var theme = await BrowserStorage<string>.GetObject("theme", STORAGE);
+            if (theme == null)
+            {
+                var setting = await DB.GetSettingsAsync(_model.Account.AccountId);
+                if (setting != null && setting.Theme != string.Empty)
+                {
+                    await BrowserStorage<string>.SaveObject("theme", setting.Theme, STORAGE);
+                    Layout.Theme = setting.Theme;
+                }
+                else
+                {
+                    await BrowserStorage<string>.SaveObject("theme", string.Empty, STORAGE);
+                    Layout.Theme = string.Empty;
+                }
+            }
+            else Layout.Theme = theme;
+
+            await DoneLoading();
+        }
+    }
+
+    private async Task Setup()
+    {
+        _model.BaseImageUrl = COLOR.BASE_IMAGE_URL;
+    }
+
+    private async Task DoneLoading()
+    {
+        _model.Loading = false;
+        StateHasChanged();
+    }
+}

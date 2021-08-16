@@ -1,0 +1,283 @@
+﻿@page "/communitygallery";
+
+@if (_model.Loading)
+{
+    <Loading />
+}
+else
+{
+    <div class="PageWrapper">
+        <h1 class="PageHeader">Community Gallery</h1>
+        <div class="GallerySortContainer">
+            Sort By:
+            <select class="form-control mt-2" @onchange="SortImages">
+                <option value="Update">Last Updated</option>
+                <option value="A-Z">Title (A-Z)</option>
+                <option value="Z-A">Title (Z-A)</option>
+            </select>
+        </div>
+
+        <div class="GridContainer">
+            @foreach (var image in _model.JoinList)
+            {
+                <div class="ItemContainer">
+                    <div class="ItemThumbnailContainer">
+                        <img class="ItemThumbnail"
+                             src="@(image.Url)"
+                             @onclick="() => ShowModal(image)" />
+                    </div>
+                    <div class="ItemTitle">
+                        <h2>@image.DisplayTitle</h2>
+                        <h4>
+                            <img src="@image.ProfilePictureUri"
+                                 height="30"
+                                 width="30" /> @image.DisplayName
+                            </h4>
+                            @foreach (PAD.Data.Enums.RatingType rating in Enum.GetValues(typeof(PAD.Data.Enums.RatingType)))
+                            {
+                                if (_model.Account?.AccountId > 0 && _model.RatingList.Where(y => y.AccountId.Equals(_model.Account.AccountId)).Where(x => x.ItemId.Equals(image.Id)).Where(z => z.RatingType.Equals(rating)).Count() > 0)
+                                {
+                                    <a class="ReactionContainer zoom-15"
+                                       style="border: 1px solid white; border-radius: 12px; padding: 3px;"
+                                       @onclick="() => RateImage(rating, image.Id)"
+                                       title="@rating">
+                                        <img class="Reaction" src="/images/@(rating).webp" />
+                                        @_model.RatingList.Where(y => y.ItemId.Equals(image.Id)).Where(x => x.RatingType.Equals(rating)).Count()
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a class="ReactionContainer zoom-15"
+                                       @onclick="() => RateImage(rating, image.Id)"
+                                       title="@rating">
+                                        <img class="Reaction" src="/images/@(rating).webp" />
+                                        @_model.RatingList.Where(y => y.ItemId.Equals(image.Id)).Where(x => x.RatingType.Equals(rating)).Count()
+                                    </a>
+                                }
+                            }
+                        </div>
+                    </div>
+                }
+        </div>
+    </div>
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+        <span class="close" @onclick="() => HideModal()">&times;</span>
+        <img class="modal-content" id="img01">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                @if (_model.Account?.AccountId > 0)
+                {
+                    <a href="@_model.ActiveImgUrl">Click to Download</a>
+                }
+                else
+                {
+                    <a href="javascript:void(0)" @onclick="async () => await PromptSignUp()">Click to Download</a>
+                }
+            </div>
+        </div>
+        <h1 class="CommentTitle">Comments</h1>
+        <div class="CommentList">
+            @if (_model.Account?.AccountId > 0)
+            {
+                <hr />
+                <div class="AddComment CommentBlock">
+                    <a id="Plus"
+                       @onclick="() => ToggleVisibility()"
+                       style="display:@_toggleHide;">+</a>
+                    <h1 style="display:@_toggleShow;">
+                        <img class="CommentIcon" src="@_model.Account.ProfilePictureUri" />
+                        @_model.Account.DisplayName
+                    </h1>
+                    <textarea @bind="_commentText"
+                              @bind:event="oninput"
+                              class="CommentInput"
+                              style="display:@_toggleShow;">
+                    </textarea>
+                    <button class="CommentSubmit"
+                            style="display:@_toggleShow;"
+                            @onclick="() => SaveComment()">
+                        SAVE
+                    </button>
+                </div>
+            }
+            @foreach (var comment in _model.CommentList)
+            {
+                if (comment.ImageId.Equals(_model.ActiveImageId))
+                {
+                    <hr />
+                    <div class="@comment.ImageId CommentBlock">
+                        <h1>
+                            <img class="CommentIcon"
+                                 src="@_model.AccountList.Where(x => x.AccountId.Equals(comment.AccountId)).FirstOrDefault().ProfilePictureUri" />
+                            @_model.AccountList.Where(x => x.AccountId.Equals(comment.AccountId)).FirstOrDefault().DisplayName
+                        </h1>
+                        <h1>@comment.CommentText</h1>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private CommunityGalleryViewModel _model = new CommunityGalleryViewModel();
+    private Account _account = new Data.Models.Account();
+    private SocialMediaService _social;
+    private string _toggleShow;
+    private string _toggleHide;
+    private string _commentText;
+
+    protected async override Task OnInitializedAsync() => await Setup();
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _model.Session = new Session(STORAGE, AUTH, USER, DB);
+            _model.Account = await _model.Session.GetAccount();
+            _model.ImageList = await DB.GetAllImageListAsync();
+            _model.ProjectList = await DB.GetAllProjectListAsync();
+            _model.AccountList = await DB.GetAccountListAsync();
+            _model.RatingList = await DB.GetRatingListAsync();
+            _model.CommentList = await DB.GetAllCommentsAsync();
+
+            _model.JoinImagesAndProjects();
+            _social = new SocialMediaService(DB);
+
+            await DoneLoading();
+        }
+    }
+
+    private async Task Setup()
+    {
+        _model.BaseImageUrl = COLOR.BASE_IMAGE_URL;
+        _toggleShow = "none";
+        _toggleHide = "block";
+    }
+
+    private async Task DoneLoading()
+    {
+        _model.Loading = false;
+        StateHasChanged();
+    }
+
+    private async Task RateImage(PAD.Data.Enums.RatingType rating, Guid id)
+    {
+        if (_model.Account == null || _model.Account.AccountId <= 0)
+        {
+            TOAST.ShowError("You must be logged in to rate an image!");
+            return;
+        }
+
+        var existing = await DB.GetRatingByItemAsync(_model.Account.AccountId, id);
+        if (existing != null)
+        {
+            foreach (Rating el in _model.RatingList)
+            {
+                if (el.RatingId.Equals(existing.RatingId) || el.RatingId.Equals(0))
+                {
+                    _model.RatingList.Remove(el);
+                    if (el.RatingType.Equals(rating))
+                    {
+                        await DB.RemoveRatingAsync(existing.RatingId);
+                        StateHasChanged();
+                        break;
+                    }
+                    else
+                    {
+                        var updated = await _social.RateImage(_model.Account.AccountId, Data.Enums.ContentType.IMAGE, rating, id, existing);
+                        _model.RatingList.Add(updated);
+                        StateHasChanged();
+                        break;
+                    }
+                }
+            }
+        }
+        else
+        {
+            var updated = await _social.RateImage(_model.Account.AccountId, Data.Enums.ContentType.IMAGE, rating, id, existing);
+            _model.RatingList.Add(updated);
+            StateHasChanged();
+        }
+    }
+
+    public void ToggleVisibility()
+    {
+        _toggleShow = "block";
+        _toggleHide = "none";
+    }
+
+    /// <summary>
+    /// Sorts the images based of the sorting ddl selection.
+    /// </summary>
+    /// <param name="selection"></param>
+    public void SortImages(ChangeEventArgs selection)
+    {
+        switch (selection.Value.ToString().ToLower())
+        {
+            case "update":
+                _model.JoinList = _model
+                    .JoinList
+                    .OrderByDescending(image => image.UpdateDate)
+                    .ThenByDescending(image => image.CreateDate).ToList();
+                break;
+            case "a-z":
+                _model.JoinList = _model
+                    .JoinList
+                    .OrderBy(image => image.DisplayTitle)
+                    .ToList();
+                break;
+            case "z-a":
+                _model.JoinList = _model
+                    .JoinList
+                    .OrderByDescending(image => image.DisplayTitle)
+                    .ToList();
+                break;
+        }
+
+        StateHasChanged();
+    }
+
+    public async Task SaveComment()
+    {
+        if (!string.IsNullOrEmpty(_commentText))
+        {
+            Comment com = new Comment()
+            {
+                AccountId = _model.Account.AccountId,
+                CommentText = _commentText,
+                ImageId = _model.ActiveImageId,
+                CreateDate = DateTime.Now
+            };
+
+            await DB.AddComment(com);
+            _model.CommentList.Add(com);
+            _toggleShow = "none";
+            _toggleHide = "block";
+            _commentText = "";
+            StateHasChanged();
+        }
+    }
+
+    public async Task ShowModal(CommunityGalleryViewModel.ImageProjectJoin img)
+    {
+        _model.ActiveImageId = img.Id;
+        _model.ActiveImgUrl = img.Url;
+
+        await JS.InvokeVoidAsync("showModal", img.Url);
+    }
+
+    public async Task HideModal()
+    {
+        _toggleShow = "none";
+        _toggleHide = "block";
+        _commentText = "";
+        await JS.InvokeVoidAsync("hideModal");
+    }
+
+    private async Task PromptSignUp()
+    {
+        await JS.InvokeVoidAsync("promptSignUp");
+    }
+}

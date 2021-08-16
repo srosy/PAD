@@ -1,0 +1,966 @@
+@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
+
+/*!
+    *LightMode Color Scheme - #B63F83, #C8658C, #DD8D9F, #6EBDEA, #6B9BCF, #667DB4
+    *DarkMode Color Scheme - #1B112C, #2A143D, #47195D, #544C70, #4F415A, #332A36
+*/
+:root {
+    --background: rgba(79,65,106,1) !important;
+    --border: #731F7A;
+    --hover: #B63F83;
+    --text: #FFF;
+    --footer: #29252B;
+    --accent: #B63F83;
+    --button: #667DB4;
+    --button-highlight: #6EBDEA;
+    --home-button: #47195D;
+    --home-button-highlight: rgba(42,20,61,1);
+    --box-background: #47195D;
+    --gradient1: linear-gradient(55deg, rgba(102,125,180,1) 20%, rgba(79,65,106,1) 69%);
+    --gradient2: linear-gradient(47deg, rgba(221,141,159,1) 0%, rgba(84,76,112,1) 45%, rgba(42,20,61,1) 70%);
+    --gradient3: linear-gradient(47deg, rgba(42,20,61,1) 0%, rgba(84,76,112,1) 45%, rgba(221,141,159,1 ) 70%);
+}
+
+.dark-mode {
+    --background: #47195D;
+    --border: #2A143D;
+    --hover: #731F7A;
+    --text: #FFF;
+    --footer: #181818;
+    --accent: #4F416A;
+    --button: #5B5F90;
+    --button-highlight: #731F7A;
+    --home-button: #47195D;
+    --home-button-highlight: rgba(42,20,61,1);
+    --box-background: #47195D;
+    --gradient1: linear-gradient(55deg, rgba(79,65,106,1) 20%, rgba(32,20,61,1) 69%);
+    --gradient2: linear-gradient(47deg, rgba(71,25,93,1) 0%, rgba(42,20,61,1) 45%, rgba(19,18,36,1) 70%);
+    --gradient3: linear-gradient(128deg, rgba(9,12,38,1) 0%, rgba(42,20,61,1) 69%);
+}
+
+/* TODO: Add CSS Theme classes below. Add new themes to the Themes SQL table. Class = CSS Class name (ie mint, dark-mode)*/
+.bw {
+    --background: #000000;
+    --border: #FFFFFF;
+    --hover: #808080;
+    --text: #FFFFFF;
+    --footer: #000000;
+    --accent: #000000;
+    --button: #000000;
+    --button-highlight: #808080;
+    --home-button: #000000;
+    --home-button-highlight: #808080;
+    --box-background: #FFFFFF;
+    --gradient1: linear-gradient(55deg, #000000 20%, #808080 69%);
+    --gradient2: linear-gradient(47deg, #000000 0%, #808080 45%, #FFFFFF 70%);
+    --gradient3: linear-gradient(128deg, #000000 0%, #808080 69%);
+}
+
+.mint {
+    --background: #2d7c35;
+    --border: #f0eddf;
+    --hover: #54382d;
+    --text: #FFFFFF;
+    --footer: #264542;
+    --accent: #54382d;
+    --button: #6da68c;
+    --button-highlight: #85c1a6;
+    --home-button: #6da68c;
+    --home-button-highlight: #85c1a6;
+    --box-background: #9be0d6;
+    --gradient1: linear-gradient(55deg, rgba(161,195,194,1) 20%, rgba(56,42,35,1) 69%);
+    --gradient2: linear-gradient(47deg, rgba(95,63,44,1) 0%, rgba(74,45,17,1) 45%, rgba(71,27,35,1) 70%);
+    --gradient3: linear-gradient(47deg, rgba(58,93,97,1) 0%, rgba(47,101,109,1) 45%, rgba(23,101,96,1) 70%);
+}
+
+.icy {
+    --background: #0f155c;
+    --border: #9396bd;
+    --hover: #55798a;
+    --text: #FFFFFF;
+    --footer: #020521;
+    --accent: #d1e1e6;
+    --button: #2d25ba;
+    --button-highlight: #615adb;
+    --home-button: #2d25ba;
+    --home-button-highlight: #615adb;
+    --box-background: #145270;
+    --gradient1: linear-gradient(55deg, rgba(101,159,235,1) 20%, rgba(47,70,107,1) 69%);
+    --gradient2: linear-gradient(47deg, rgba(4,33,56,1) 0%, rgba(31,75,87,1) 45%, rgba(3,67,115,1) 70%);
+    --gradient3: linear-gradient(47deg, rgba(10,92,89,1) 0%, rgba(71,121,186,1) 45%, rgba(216,226,240,1) 70%);
+}
+
+.barftreuse {
+    --background: #565c27;
+    --border: #ccc543;
+    --hover: #989e86;
+    --text: #FFFFFF;
+    --footer: #334732;
+    --accent: #4b5c0a;
+    --button: #548535;
+    --button-highlight: #79b553;
+    --home-button: #548535;
+    --home-button-highlight: #79b553;
+    --box-background: #989e86;
+    --gradient1: linear-gradient(55deg, rgba(128,41,25,1) 20%, rgba(48,1,15,1) 69%);
+    --gradient2: linear-gradient(47deg, rgba(97,88,43,1) 0%, rgba(150,121,63,1) 45%, rgba(72,84,51,1) 70%);
+    --gradient3: linear-gradient(47deg, rgba(210,224,164,1) 0%, rgba(163,160,77,1) 45%, rgba(56,69,4,1) 70%);
+}
+
+.nav {
+    background-color: var(--background);
+    border-color: var(--border);
+}
+
+html, body, .carousel-container {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: #fff;
+    font-family: "Monaco", "Courier New", monospace;
+    background: var(--background);
+}
+
+    .carousel-container img {
+        height: 35vh;
+        width: auto;
+        margin-top: 5vh;
+        margin-left: 10vw;
+    }
+
+.carousel-container {
+    padding-top: 1vh;
+    background: var(--gradient1);
+    border-top: 4px solid #47195D;
+    border-bottom: 4px solid #47195D;
+    height: 56vh;
+}
+
+.home-sociallinks {
+    padding-left: 2vw;
+    left: 1vw;
+    bottom: 2vh;
+    font-size: 28px;
+    background-color: var(--footer);
+    border-top: 4px solid var(--background);
+}
+
+.fa-twitter, .fa-youtube, .fa-instagram, .fa-camera {
+    background: #fff;
+    color: #6B9BCF;
+    font-size: 70px;
+}
+
+.project-showcase img {
+    padding-top: 2vh;
+    padding-bottom: 2vh;
+}
+
+.fa:hover {
+    opacity: 0.7;
+    text-decoration: none;
+}
+
+.fa {
+    padding: 1vh;
+    margin-left: 1vw;
+    margin-bottom: 3vh;
+    font-size: 5vh !important;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 50%;
+    text-decoration: none;
+}
+
+.welcome-text {
+    font-size: 3vh;
+    padding-top: 1vh;
+    padding-bottom: 1vh;
+}
+
+.fa img {
+    height: 4.5vh;
+    width: auto;
+}
+
+.social-text {
+    padding-top: 2vh;
+    padding-bottom: 1vh;
+    margin-left: 4.5vw;
+    color: #fff;
+}
+
+.header-designnow-button, .header-resume-button {
+    height: 3vw;
+    margin-top: 20vh;
+    background: #47195D;
+    border: 2px solid #000;
+    border-radius: 15pc;
+    color: #fff;
+    font-size: 1vw;
+    padding: 10px;
+    display: table;
+}
+
+.header-button-container {
+    display: flex;
+    justify-content: center;
+}
+
+.header-spacer {
+    margin-left: .2vw;
+    margin-right: .2vw;
+}
+
+.header-designnow-button:hover, .header-resume-button:hover {
+    background: rgba(42,20,61,1);
+    border: 2px solid #000;
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.MainLayoutWrapper {
+    border: 4px solid var(--border);
+}
+
+.home-paragraph {
+    margin-left: 13vw;
+    margin-right: 13vw;
+}
+
+.watermark {
+    position: fixed;
+    right: 4vw;
+    bottom: 5vh;
+    vertical-align: middle;
+}
+
+.watermark h3 {
+    font-size: 4.5vh;
+    position: fixed;
+    right: 8vw;
+    margin-top: .5vw;
+}
+
+    .watermark img {
+        height: 7vh;
+        vertical-align: middle;
+        width: auto;
+        bottom: 3vh;
+    }
+
+.carousel-list {
+    margin-left: 1vw;
+    margin-top: 14vh;
+    border: 4px solid var(--box-background);
+    width: 18vw;
+}
+
+h1, h3, h2, h4 {
+    color: #fff;
+    margin: auto;
+    font-family: "Monaco", "Courier New", monospace;
+}
+
+.project-showcase img {
+    width: 52vw;
+    height: auto;
+}
+
+.project-showcase {
+    background: var(--gradient2)
+}
+
+.project-showcase-text {
+    margin-top: 14vh;
+    text-align: center;
+    margin-left: 8vw;
+    margin-right: 8vw;
+    vertical-align: middle;
+}
+
+.header {
+    background-image: url("/images/landscapeNew.webp");
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: 40vh;
+    color: #000;
+}
+
+    .header h1, .header h3 {
+        padding-top: 3vh;
+        padding-bottom: 3vh;
+        color: #000;
+    }
+
+.community-gallery-button button, .community-gallery-button button:active, .community-gallery-button button:focus {
+    background: #47195D;
+    border: 2px solid #fff;
+}
+
+.community-gallery-button {
+    padding-bottom: 2vh;
+    margin-top: 16vh;
+    margin-right: 8vw;
+}
+
+    .community-gallery-button button:hover {
+        background: rgba(42,20,61,1);
+        border: 2px solid #fff;
+    }
+
+.header img {
+    width: 100%;
+    height: 100%;
+}
+
+.col {
+    list-style-position: inside;
+}
+
+ul {
+    list-style-type: square;
+}
+
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.welcome-text {
+    margin-top: 3vh;
+}
+
+
+/*All this below was auto generated already in the CSS file*/
+
+a, .btn-link {
+    color: #0366d6;
+    cursor: pointer;
+}
+
+.navbar, .footer {
+    background: #332A36;
+    border: none !important;
+}
+
+.footer {
+    z-index: -1;
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+.container {
+    justify-content: center;
+    align-items: center;
+    background: var(--gradient2) !important;
+    color: #fff !important;
+}
+
+    .container a, .container a:hover {
+        color: #fff !important;
+    }
+
+        .container a:hover {
+            text-decoration: underline;
+        }
+
+.btn-primary {
+    color: #fff !important;
+    background: var(--home-button) !important;
+    border: 2px solid #fff !important;
+}
+
+    .btn-primary:hover {
+        color: #fff !important;
+        background: var(--home-button-highlight) !important;
+        border: 2px solid #fff !important;
+    }
+
+.content {
+    padding-top: 1.1rem;
+}
+
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #26b050;
+}
+
+.invalid {
+    outline: 1px solid red;
+}
+
+.validation-message {
+    color: red;
+}
+
+
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
+.fa-spinner {
+    color: white;
+}
+
+.spinner {
+    font-size: 48px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+}
+
+.PageWrapper {
+    border: .4vw solid var(--box-background);
+    border-radius: .8vw;
+    background: var(--gradient3);
+}
+
+.PageHeader {
+    text-align: center;
+    padding-top: 1vh;
+}
+
+.GridContainer {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    background-color: var(--box-background);
+    grid-gap: .75em;
+    padding: 1em;
+    margin: 1em;
+    height: auto;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    -ms-overflow-style: none;
+}
+
+    .GridContainer::-webkit-scrollbar {
+        display: none;
+    }
+
+.ItemContainer {
+    height: auto;
+    text-align: center;
+    background-color: var(--accent);
+    cursor: pointer;
+}
+
+.ItemThumbnailContainer {
+    height: auto;
+}
+
+    .ItemThumbnailContainer:hover {
+        background-color: var(--button-highlight);
+    }
+
+.ItemThumbnail {
+    height: 25vh;
+    max-width: 100%;
+    object-fit: cover;
+}
+
+.toast-message {
+    top: 60%;
+    left: 20%;
+}
+
+.ItemTitle {
+    display: block;
+    background-color: var(--button);
+    height: auto;
+    width: 100%;
+    color: var(--text);
+    font-size: 1em;
+    text-align: center;
+    padding-top: 15px;
+    padding-bottom: 1vh;
+}
+
+.item-title-no-date {
+    padding-top: 30px !important;
+}
+
+    .ItemTitle:hover {
+        background-color: var(--button-highlight);
+        color: var(--text);
+    }
+
+.profile-header {
+    margin-top: 2vh;
+}
+
+.profile-pagewrapper button {
+    background: var(--home-button);
+    border: 2px solid #fff;
+    color: #fff;
+}
+
+.profile-pagewrapper button:hover {
+    background: var(--home-button-highlight);
+    border: 2px solid #fff;
+    color: #fff;
+}
+
+.form-bg-text {
+    margin-left: .8vw;
+}
+
+.updateButton-holder {
+    margin-top: -4vh;
+    margin-left: .8vw;
+    margin-bottom: 1vh;
+}
+
+.checkbox-container {
+    width: 2vw;
+    justify-content: left;
+    align-items: start;
+}
+
+.profile-checkbox {
+    margin-left: .8vw;
+    font-size: .5em;
+}
+
+.fileSubmission-container {
+    margin-top: 1vh;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+}
+
+.uploadProfilePicture-button {
+    display: none;
+}
+
+.UpdateButtonPic {
+    margin-top: 1vh;
+}
+
+.container {
+    border: .4vw solid #47195D;
+    border-radius: .8vw;
+    background: var(--gradient3);
+}
+
+.toast-success {
+    background-color: #6EBDEA !important;
+}
+
+.toast-error {
+    background-color: #47195D !important;
+}
+
+.pallette-editor-container {
+    color: white;
+    background-color: var(--background);
+    margin: .5vw;
+    padding-top: 1vh;
+    padding-bottom: 1vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 40vh;
+}
+
+.pallete-square, .pallete-square p {
+    border: #000;
+    height: 3vh;
+    width: 1vw;
+    margin-right: .4vw;
+    display: inline-table;
+    font-size: .5em;
+    padding-top: .2vh;
+    padding-bottom: .2vh;
+}
+
+.pallete-square p:hover, .pallete-square a:hover {
+    cursor: pointer;
+}
+
+.pallette-squares-container {
+    vertical-align: central;
+    justify-content: center;
+    margin-bottom: .15vh;
+}
+
+.pallette-editor-header h3 {
+    font-size: 1.6em;
+}
+
+.IndivualPalletteTitle {
+    font-size: .6em;
+    text-align: center;
+    vertical-align: central;
+    justify-content: center;
+    margin-top: .5vh;
+}
+
+.pallete-row {
+    margin: .5vw;
+}
+
+.edit-pallette-button {
+    height: .3vh;
+    width: 1.1vw;
+    right: -1.3vw;
+    top: .3vh;
+    position: absolute;
+}
+
+.edit-pallette-button:focus, .edit-pallette-button:active, .edit-pallette-button:focus-visible {
+    outline: none;
+}
+
+.edit-pallette-button:hover {
+    transform: scale(1.50);
+    top: -.75vh !important;
+}
+
+.NewPalette-ValidationWrapper {
+    position: fixed;
+}
+
+.NewPalette-FormWrapper {
+    background-color: var(--accent:);
+    color: white;
+    border: solid;
+    border-color: var(--border);
+    border-width: 1vw;
+    margin-right: 1em;
+    margin-left: 1em;
+    margin-bottom: 1em;
+    padding-bottom: 2vh;
+    padding-right: 32vw;
+    padding-left: 32vw;
+    text-align: center;
+}
+
+.NewPalette-NewForm {
+    text-align: left;
+}
+
+.NewPalette-FieldLabel {
+    font-size: 2em;
+}
+
+.NewPalette-InputField {
+    width: 100%;
+}
+
+.NewPalette-NewProjectFormButtonWrapper, .EditPalette-NewProjectFormButtonWrapper {
+    text-align: center;
+}
+
+.NewPalette-CreateButton {
+    font-size: 2em;
+    margin-top: 2vh;
+    padding-left: 1vw;
+    padding-right: 1vw;
+    color: white;
+    background-color: var(--button);
+    border: solid;
+    border-color: var(--border);
+    border-width: .5vw;
+}
+
+.NewPalette-CreateButton:hover {
+    background-color: var(--button-highlight);
+    color: #FFF;
+}
+
+.NewPalette-ColorPicker-Container {
+    margin-top: 1vh;
+}
+
+.NewPalette-PageWrapper {
+    background: var(--accent);
+}
+
+.NewPalette-NewProjectFormButtonWrapper {
+    position: absolute;
+    bottom: 32%;
+    justify-content: center;
+    align-content: center;
+    right: 42%;
+}
+
+.EditPalette-NewProjectFormButtonWrapper {
+    position: absolute;
+    bottom: 31%;
+    justify-content: center;
+    align-content: center;
+    right: 44%;
+}
+
+.tooltiptext {
+    visibility: hidden;
+    font-size: .5em;
+    position: absolute;
+    right: -3%;
+    top: -8%;
+}
+
+.Pallette-editor-tooltip:hover .tooltiptext {
+    visibility: visible;
+}
+
+.NewPalette-FieldLabel-Last {
+    margin-bottom: 12vh;
+}
+
+.NewPalette-row-first {
+    margin-top: 2vh;
+}
+
+.NewPalette-FormWrapper {
+    padding-bottom: 4vh;
+}
+
+.NewPalette-ColorPicker-entry {
+    position: relative;
+    top: 70%;
+}
+
+.NewPalette-row label {
+    padding-right: 1vw;
+    bottom: 1vh;
+}
+
+.NewPalette-FieldLabel {
+    position: relative;
+}
+
+.NewPalette-row {
+    justify-content: center;
+    align-content: center;
+}
+
+/* The Modal (background) */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 8vh; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+}
+
+/* Modal Content (image) */
+.modal-content {
+    margin: auto;
+    display: block;
+    height: auto;
+    max-width: 40vw;
+    max-height: 75vh;
+}
+
+/* Add Animation */
+.modal-content, #caption {
+    -webkit-animation-name: zoom;
+    -webkit-animation-duration: 0.6s;
+    animation-name: zoom;
+    animation-duration: 0.6s;
+}
+
+@-webkit-keyframes zoom {
+    from {
+        -webkit-transform: scale(0)
+    }
+
+    to {
+        -webkit-transform: scale(1)
+    }
+}
+
+@keyframes zoom {
+    from {
+        transform: scale(0)
+    }
+
+    to {
+        transform: scale(1)
+    }
+}
+
+/* The Close Button */
+.close {
+    position: absolute;
+    top: 2vh;
+    right: 20vw;
+    color: #FFF !important;
+    font-size: 4em !important;
+    font-weight: bold !important;
+    transition: 0.3s;
+}
+
+    .close:hover,
+    .close:focus {
+        color: #FFF !important;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+.LoginLogoutWrapper {
+    height: 72vh;
+    text-align: center;
+}
+
+.LoginFormGroup{
+    margin-left: 5vw;
+    margin-right: 5vw;
+}
+
+.LogoutButtonWrapper {
+    margin-top: 2vh;
+    width: 100%;
+    text-align: center;
+}
+
+.LoginLogoutLogo {
+    margin-top: 2vh;
+    margin-bottom: 2vh;
+    max-width: 70%;
+}
+
+.LogoutSecondColumn {
+    text-align: center;
+}
+
+.LogoutSecondColumnImage {
+    margin-top: 8vh;
+    margin-bottom: 2vh;
+    max-width: 90%;
+}
+
+._LayoutBody {
+    overflow-x: hidden;
+}
+
+._LayoutSideColumn {
+    width: 30%;
+    text-align: center;
+}
+
+._LayoutCenterColumn {
+    width: 40%;
+    overflow-x: hidden;
+}
+
+._LayoutColumnImage {
+    width: 80%;
+}
+
+._LayoutColumnLeftImage {
+    transform: scaleX(-1);
+}
+
+.zoom-5:hover {
+    transform: scale(1.05);
+}
+
+.zoom-15:hover {
+    transform: scale(1.15);
+}
+
+.zoom-25:hover {
+    transform: scale(1.25);
+}
+
+.zoom-50:hover {
+    transform: scale(1.50);
+}
+
+.zoom-2x:hover {
+    transform: scale(2);
+}
+
+.hand {
+    cursor: pointer;
+}
+
+.change-grid-size{
+    font-size: .9em !important;
+    margin-bottom: 1vh !important;
+}
+
+.gridSize-label{
+    margin-top: 1vh;
+    margin-bottom: 1vh;
+    font-size: .7em;
+}
+
+.gridUpdate-input{
+    display:inline;
+    width: 2vw !important;
+}
+
+.grid-size-x{
+    display:inline;
+}
+
+.grid-size-update-button{
+    margin-top: 1vh;
+}
+
+.workspace-pagewrapper{
+    overflow-y: hidden;
+    overflow-x: hidden;
+}
+
+.btn-home, .btn-primary.btn-home {
+    position: relative;
+    top: 200px;
+    font-size: 2vw;
+    border-radius: 25px;
+}
+
+.BrushShape-Label{
+    font-size: .8em !important;
+}
+
+.BrushShape-Container h3{
+    display: inline;
+}
+
+.BrushShape-Container {
+    color: white;
+    background-color: var(--background);
+    margin: .5vw;
+    padding-bottom: 1vh;
+}
+
+.BrushShape-Option:hover {
+    cursor: pointer;
+    background-color: var(--button-highlight);
+}
+
+.BrushShape-Option{
+    background-color: var(--accent);
+    padding-left: .4vw;
+    padding-right: .4vw;
+}

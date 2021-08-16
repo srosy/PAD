@@ -1,0 +1,142 @@
+﻿@page "/editpalette/{palletteid}/{FromWorkspaceId}"
+@page "/editpalette/{palletteid}";
+<div class="NewPalette-PageWrapper">
+
+    @if (_model.Loading)
+    {
+        <Loading />
+    }
+    else
+    {
+        <AuthorizeView>
+            <Authorized Context="Auth">
+                <h1 class="PageHeader">Edit Palette</h1>
+                <div class="NewPalette-FormWrapper">
+                    <EditForm Model="@_model.Palette" OnValidSubmit="@Editpalette">
+                        <DataAnnotationsValidator />
+                        <div class="NewPalette-NewForm">
+                            <InputText id="Name"
+                                       class="mt-2 form-control NewPalette-InputField"
+                                       placeholder="Enter Palette Name..."
+                                       @bind-Value="_model.Palette.Name" />
+                            <div class="text-center">
+                                <button type="submit" class="NewPalette-CreateButton">Update Palette</button>
+                                @if (_model.Palette.PalletteId > 0)
+                                {
+                                    <div class="text-center mt-4">
+                                        <button type="button"
+                                                class="btn btn-danger mt-1"
+                                                @onclick="Delete">
+                                            Delete Palette
+                                        </button>
+                                    </div>
+                                }
+                                <div class="NewPalette-ValidationWrapper">
+                                    <ValidationSummary />
+                                </div>
+                            </div>
+                        </div>
+                    </EditForm>
+                    <div class="NewPalette-ColorPickers-Container">
+                        @for (int i = 0; i < _model.SelectedColorArray.Length; i++)
+                        {
+                            var _i = i;
+                            <div class="row NewPalette-row @(i == 0 ? "NewPalette-row-first" : string.Empty)">
+                                <label class="NewPalette-FieldLabel @(i == 0 ? "NewPalette-FieldLabel-First" : string.Empty)">Color @(i+1):</label>
+                                <RadzenColorPicker @bind-Value="@_model.SelectedColorArray[_i]"></RadzenColorPicker>
+                            </div>
+                        }
+                    </div>
+                    <div class="text-center mt-4">
+                        <button type="button"
+                                class="btn btn-dark btn-lg"
+                                @onclick="GoBack">
+                            Back
+                        </button>
+                    </div>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <h1>Must Be Logged In To Create A New Palette</h1>
+            </NotAuthorized>
+        </AuthorizeView>
+    }
+</div>
+
+@code {
+    [Parameter] public string FromWorkspaceId { get; set; } // from url
+    [Parameter] public string palletteid { get; set; } // from url
+    EditPaletteViewModel _model = new EditPaletteViewModel();
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _model.Session = new Session(STORAGE, AUTH, USER, DB);
+            _model.Account = await _model.Session.GetAccount();
+            _model.Palette = await DB.GetPaletteAsync(int.Parse(palletteid));
+            _model.SelectedColorArray = _model.Palette.HexCodes.Replace(" ", string.Empty).Split(",").ToArray();
+            if (_model.Account == null)
+            {
+                await DoneLoading();
+                return;
+            }
+
+            await DoneLoading();
+        }
+    }
+
+    private async Task DoneLoading()
+    {
+        _model.Loading = false;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// This function is called when the Edit Palette button is clicked. It will set the updateDate for the palette to now and then cycle through the array
+    /// of selected colors to see which ones were updated and if they were updated it will convert it into the proper hecode format for the DB and future uses.
+    /// This will then be saved into a single string instead of array and enter the database and will finally then redirect to the workspace page the user entered
+    /// the edit palette page from.
+    /// </summary>
+    /// <returns></returns>
+    public async Task Editpalette()
+    {
+        try
+        {
+            if (!_model.SelectedColorArray.All(c => c.Contains("#")))
+            {
+                TOAST.ShowError("Select a color for each box!");
+                return;
+            }
+
+            _model.Palette.UpdateDate = DateTime.UtcNow;
+            for (int i = 0; i < _model.SelectedColorArray.Length; i++)
+            {
+                if (!_model.SelectedColorArray[i].Contains("#"))
+                {
+                    _model.SelectedColorArray[i] = await COLOR.ConvertRGB_ToHex(_model.SelectedColorArray[i]);
+                    _model.SelectedColorArray[i] = "#" + _model.SelectedColorArray[i];
+                }
+            }
+            string colorList = string.Join(",", _model.SelectedColorArray).Trim();
+            _model.Palette.HexCodes = colorList;
+            await DB.UpdatePaletteAsync(_model.Palette);
+            TOAST.ShowSuccess("Palette Updated Successfully");
+            GoBack();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            TOAST.ShowError("Palette Update Was Unsuccessful");
+        }
+    }
+
+    public async Task Delete()
+    {
+        _model.Palette.DeleteDate = DateTime.UtcNow;
+        await Editpalette();
+    }
+
+    private void GoBack() => NAV.NavigateTo("workspace/" + FromWorkspaceId);
+}
+

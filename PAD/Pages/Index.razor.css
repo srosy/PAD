@@ -1,0 +1,7 @@
+﻿.carousel-container {
+    background-color: var(--background);
+}
+
+.index-title {
+    color: var(--text);
+}

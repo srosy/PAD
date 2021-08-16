@@ -1,0 +1,23 @@
+﻿
+<RadzenColorPicker @bind-Value=@Color ShowHSV=true ShowRGBA=true ShowColors=true ShowButton=true Change=@OnChange />
+
+@code {
+
+    /*
+        Example usage: <Colorpicker Color="rgb(68, 58, 110)" />
+        - Provides rgb values; convert to hex as needed.
+    */
+
+    [Parameter] public string Color { get; set; }
+
+    [Parameter] public EventCallback<string> ColorChanged { get; set; }
+
+    [Parameter] public Canvas2DContext Context { get; set; }
+
+    private async Task OnChange(string colorChangedTo)
+    {
+        await Context.SetFillStyleAsync(colorChangedTo);
+        //await JS.InvokeVoidAsync("log", $"Color changed to: {colorChangedTo}");
+        await ColorChanged.InvokeAsync(Color);
+    }
+}

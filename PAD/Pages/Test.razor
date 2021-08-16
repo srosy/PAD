@@ -1,0 +1,112 @@
+﻿@page "/test";
+
+@if (_model.Loading)
+{
+    <Loading />
+}
+else
+{
+    if (!_model.UserAuthenticated)
+    {
+        <h1 class="text-white">User not authenticated.</h1>
+    }
+    else
+    {
+        <h2 class="text-white">Testing & Examples</h2>
+
+        if (_model.Tests.Any())
+        {
+            <div class="card">
+                <div class="card-title">
+                    <h4 class="p-2 m-2">Table Example...</h4> <!-- for any padding, use p-#, for margins use m-# -->
+                    <small class="p-2 m-2">Filters by the message column</small>
+                </div>
+                <div class="card-body">
+                    <MatTable Items="_model.Tests" class="mat-elevation-z5"
+                              Striped="true" FilterByColumnName="Message" PageLabel="Page:" DebounceMilliseconds="150"
+                              AllowSelection="true" SelectionChanged="RowClick" ShowPaging="false">
+                        <MatTableHeader>
+                            <th>TestId</th>
+                            <th>Message</th>
+                            <th>Email</th>
+                            <th>CreateDate</th>
+                            <th>UpdateDate</th>
+                            <th>DeleteDate</th>
+                        </MatTableHeader>
+                        <MatTableRow>
+                            <td>@context.TestId</td>
+                            <td>@context.Message</td>
+                            <td>@context.Email</td>
+                            <td>@context.CreateDate.ToShortDateString()</td>
+                            <td>@context.UpdateDate?.ToShortDateString()</td>
+                            <td>@context.DeleteDate?.ToShortDateString()</td>
+                        </MatTableRow>
+                    </MatTable>
+                </div>
+                <div class="card-footer">This is a footer using card. Get very used to cards, they make UI design EZ.</div>
+            </div>
+        }
+
+        <div class="card mt-3 pt-3">
+            <!-- You can even specify margin-top by mt-# and padding-top by pt-# -->
+            <div class="card-title">
+                <h4 class="p-2 m-2">Form Example...</h4> <!-- for any padding, use p-#, for margins use m-# -->
+            </div>
+            <div class="card-body">
+                <EditForm Model="_test" OnValidSubmit="@SubmitTest">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    <div class="form-group ">
+                        <InputText id="message" class="form-control" type="text" placeholder="message" @bind-Value="_test.Message" />
+                    </div>
+                    <div class="form-group ">
+                        <InputText id="email" class="form-control" type="text" placeholder="email" @bind-Value="_test.Email" />
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </EditForm>
+            </div>
+        </div>
+    }
+
+}
+
+@code {
+    TestViewModel _model = new TestViewModel();
+    Data.Models.Test _test = new Data.Models.Test();
+
+    protected async override Task OnInitializedAsync()
+    {
+        _model.UserAuthenticated = AUTH.GetAuthenticationStateAsync().Result.User.Identity.IsAuthenticated;
+        if (_model.UserAuthenticated) await Refresh();
+        _model.Loading = false;
+    }
+
+    /// <summary>
+    /// Handles the row click event.
+    /// </summary>
+    /// <param name="row"></param>
+    public void RowClick(object row)
+    {
+        var test = row as Test;
+        // do stuff with the test clicked
+        this.StateHasChanged();
+    }
+
+    /// <summary>
+    /// Controls the button submit event.
+    /// </summary>
+    /// <returns></returns>
+    public async Task SubmitTest()
+    {
+        _test.CreateDate = DateTime.UtcNow;
+        var success = await DB.AddTestAsync(_test);
+        await JS.InvokeVoidAsync("Toast", new[] { success ? "success" : "error", success ? "Saved test" : "Failed to save test.", "3000" }); // toasttype, message, duration
+        await Refresh();
+    }
+
+    private async Task Refresh()
+    {
+        _model.Tests = await DB.GetTestsAsync();
+        _test = new Data.Models.Test(); // clear when done
+    }
+}

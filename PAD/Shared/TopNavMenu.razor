@@ -1,0 +1,118 @@
+﻿<div class="NavMenuBody">
+    @code{
+        private bool _isShow { get; set; } = true;
+        private void Show()
+        {
+            _isShow = !_isShow;
+        }
+    }
+    <ul class="NavMenuList">
+
+        <li class="Logo">
+            <a href="/home" class="NavLink"><image class="LogoImage" src="/images/LogoWithDuck.webp"></image></a>
+        </li>
+
+        <AuthorizeView>
+            <Authorized>
+                <li class="NavMenuListItem">
+                    <a @onclick="@Show" class="NavLink RightmostLink">@context.User.Identity.Name.Split("@")[0]</a>
+                </li>
+                <li class="NavMenuListItem">
+                    <a href="/communitygallery" class="NavLink OtherLink">Community Gallery</a>
+                </li>
+                <li class="NavMenuListItem">
+                    <a href="/personalgallery" class="NavLink OtherLink">Personal Gallery</a>
+                </li>
+                <li class="NavMenuListItem">
+                    <a href="/projects" class="NavLink OtherLink">Projects</a>
+                </li>
+                <div id="nav-ddl" class="NavMenuDropDown text-center" hidden="@_isShow">
+                    <a href="/profile" class="nav-link btn btn-link text-center">Profile</a>
+                    <a @onclick="Toggle" class="nav-link btn btn-link text-center">Cycle Themes</a>
+                    <a href="Identity/Account/LogOut" class="nav-link btn btn-link text-center">Log Out</a>
+                </div>
+                <input id="_isShow" type="hidden" @bind="@_isShow" />
+            </Authorized>
+            <NotAuthorized>
+                <li class="NavMenuListItem">
+                    <a href="Identity/Account/Login" class=" NavLink RightmostLink">Login</a>
+                </li>
+                <li class="NavMenuListItem">
+                    <a href="Identity/Account/Register" class="NavLink OtherLink">Register</a>
+                </li>
+                <li class="NavMenuListItem">
+                    <a href="/communitygallery" class="NavLink OtherLink">Community Gallery</a>
+                </li>
+            </NotAuthorized>
+        </AuthorizeView>
+    </ul>
+</div>
+
+@code
+{
+    [CascadingParameter]
+    public MainLayout Layout { get; set; }
+    ProfileViewModel _model = new ProfileViewModel();
+    Data.Models.Settings _setting = new Data.Models.Settings();
+    private List<Theme> _themes;
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _themes = await DB.GetThemes();
+        }
+    }
+
+    public async Task profileUpdate()
+    {
+        if (_model.Account == null)
+        {
+            _model.Session = new Session(STORAGE, AUTH, USER, DB);
+            _model.Account = await _model.Session.GetAccount();
+            _setting = await DB.GetSettingsAsync(_model.Account.AccountId);
+            if (_setting == null)
+            {
+                _setting = new Settings()
+                {
+                    AccountId = _model.Account.AccountId,
+                    CreateDate = DateTime.UtcNow
+                };
+                await DB.AddSettingsAsync(_setting);
+            }
+        }
+
+        _model.Account.UpdateDate = DateTime.UtcNow;
+        _setting.UpdateDate = DateTime.UtcNow;
+        _setting.Theme = Layout.Theme;
+        await DB.UpdateAccountAsync(_model.Account);
+        try
+        {
+            await DB.UpdateSettingsAsync(_setting);
+        }
+        catch (Exception e)
+        {
+            Console.Write(e);
+        }
+    }
+
+    private async Task Toggle()
+    {
+        if (string.IsNullOrEmpty(Layout.Theme))
+        {
+            Layout.Theme = _themes[_themes.Count - 1].Class;
+        }
+        else
+        {
+            for (int i = _themes.Count - 1; i > 0; i--)
+            {
+                if(_themes[i].Class.Equals(Layout.Theme))
+                {
+                    Layout.Theme = _themes[i - 1].Class;
+                    break;
+                }
+            }
+        }
+        await profileUpdate();
+    }
+}

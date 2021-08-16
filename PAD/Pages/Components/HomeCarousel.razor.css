@@ -1,0 +1,11 @@
+﻿#home-carousel {
+    height: auto;
+    width: 25vw;
+    margin-left: 4vw;
+}
+.inner {
+    position: relative;
+    max-width: 50vh;
+    overflow: visible;
+    height: 77vh;
+}

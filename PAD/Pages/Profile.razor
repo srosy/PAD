@@ -1,0 +1,226 @@
+﻿@page "/profile";
+
+@if (_model.Loading)
+{
+    <Loading />
+}
+else
+{
+    <div class="PageWrapper profile-pagewrapper">
+        <AuthorizeView>
+            <Authorized Context="Auth">
+                <h1 class="PageHeader text-center profile-header">Profile</h1>
+                <div class="InfoContainer">
+                    <div class="PfpContainer">
+                        @if (string.IsNullOrEmpty(_model.Account.ProfilePictureUri))
+                        {
+                            <label for="ProfilePicture">
+                                <img class="PfpImage" src="/images/DefaultPFPTransparent.webp" />
+                            </label>
+                        }
+                        @if (!string.IsNullOrEmpty(_model.Account.ProfilePictureUri))
+                        {
+                            <label class="hand zoom-15" for="ProfilePicture">
+                                <img class="PfpImage" src="@_model.Account.ProfilePictureUri" />
+                            </label>
+                        }
+                        <div class="fileSubmission-container">
+                            <label for="ProfilePicture">Upload Profile Picture</label>
+                            <BlazorInputFile.InputFile class="uploadProfilePicture-button hidden"
+                                                       id="ProfilePicture"
+                                                       name="ProfilePicture"
+                                                       title="Upload a profile image"
+                                                       OnChange="UploadImageOnChange" />
+                            <br />
+                            <small class="input-file-message @(_fileMessage.ToLower().Contains("select") ? "text-danger" : "text-success")">@_fileMessage</small>
+                        </div>
+                    </div>
+                    <div class="FieldsContainer">
+                        <EditForm Model="_account"
+                                  class="form-horizontal"
+                                  OnValidSubmit=@ProfileUpdate>
+                            <div class="form-group">
+                                <span class="ml-3" for="email">Email:</span>
+                                <span class="control-label" for="email">@_model.Account.Email</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-3 FieldLabel" for="FirstName">First Name: </label>
+                                <div class="col-sm-10">
+                                    <input class="form-control" type="text" id="FirstName" @bind-value=@_model.Account.FirstName name="FirstName" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-3 FieldLabel" for="LastName">Last Name: </label>
+                                <div class="col-sm-10">
+                                    <input class="form-control" type="text" id="LasttName" @bind-value=@_model.Account.LastName name="LastName" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-3 FieldLabel" for="DisplayName">Display Name: </label>
+                                <div class="col-sm-10">
+                                    <input class="form-control" type="text" id="DisplayName" @bind-value=@_model.Account.DisplayName name="DisplayName" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-3 FieldLabel" for="Theme">Theme: </label>
+                                <div class="col-sm-10">
+                                    <select class="form-control selectpicker" @bind=@_setting.Theme>
+                                    <option>--select--</option>
+                                    @foreach (var theme in _themes)
+                                    {
+                                        <option value="@theme.Class">@theme.Title</option>
+                                    }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-3 FieldLabel" for="TotalKarma">Total Karma: </label>
+                                <label class="control-label col-sm-10 FieldLabel form-bg-text" for="TotalKarma">@_karma</label>
+                            </div>
+                            <div class="updateButton-holder">
+                                <button type="submit" class="UpdateButton text-center">Update Profile</button>
+                            </div>
+                        </EditForm>
+                        <div class="row pt-2">
+                            <div class="col-md-12 m-2">
+                                <button class="btn btn-primary" @onclick="GetEncryptedCredentials">Copy API Credentials</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <h1>Must Be Logged In To View And Edit Your Profile</h1>
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
+    <div class="watermark">
+        <h3 class="text-right">Team</h3>
+        <img src="@(_model.BaseImageUrl)Rubber_Duck.webp" alt="Team Logo" />
+    </div>
+
+}
+
+@code{
+    [CascadingParameter]
+    public MainLayout Layout { get; set; }
+    private ProfileViewModel _model = new ProfileViewModel();
+    private Account _account = new Data.Models.Account();
+    private SettingViewModel _settingViewModel = new SettingViewModel();
+    private Settings _setting = new Data.Models.Settings();
+    private DateTime _updateDate = DateTime.UtcNow;
+    private string _fileMessage = "No file selected";
+    private int _karma = 0;
+    private List<Theme> _themes;
+
+    protected async override Task OnInitializedAsync()
+    {
+        _model.BaseImageUrl = COLOR.BASE_IMAGE_URL;
+    }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _themes = await DB.GetThemes();
+            _model.Session = new Session(STORAGE, AUTH, USER, DB);
+            _model.Account = await _model.Session.GetAccount();
+            _setting = await DB.GetSettingsAsync(_model.Account.AccountId);
+            _karma = await DB.GetTotalUserRatingsAsync(_model.Account.AccountId);
+            if (_setting == null)
+            {
+                _setting = new Settings()
+                {
+                    AccountId = _model.Account.AccountId,
+                    Theme = "",
+                    NotificationsEnabled = true,
+                    CreateDate = DateTime.UtcNow
+                };
+
+                var createdSettings = await DB.AddSettingsAsync(_setting);
+                Console.WriteLine($"{(createdSettings ? "Successfully added" : "Failed to add")} settings");
+            }
+
+            _updateDate = DateTime.UtcNow;
+            if (_model.Account == null)
+            {
+                await DoneLoading();
+                return;
+            }
+            _account.UpdateDate = _updateDate;
+            _setting.UpdateDate = _updateDate;
+            await DoneLoading();
+        }
+    }
+
+    /// <summary>
+    /// Handles updates to the profile.
+    /// </summary>
+    /// <returns></returns>
+    public async Task ProfileUpdate()
+    {
+        _model.Account.UpdateDate = _updateDate;
+        _setting.UpdateDate = _updateDate;
+        await DB.UpdateAccountAsync(_model.Account);
+        try
+        {
+            var saved = await DB.UpdateSettingsAsync(_setting);
+            await JS.InvokeVoidAsync("Toast", new[] { saved ? "success" : "error", saved ? "Saved profile." : "Failed to save profile.", "2000" });
+            Layout.Theme = _setting.Theme;
+        }
+        catch (Exception ex)
+        {
+            TOAST.ShowError("Failed to update profile.");
+            Console.Write(ex);
+        }
+    }
+
+    private async Task DoneLoading()
+    {
+        _model.Loading = false;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Handles uploading an avatar image.
+    /// </summary>
+    /// <param name="files"></param>
+    /// <returns></returns>
+    public async Task UploadImageOnChange(IFileListEntry[] files)
+    {
+        try
+        {
+            var file = files.FirstOrDefault();
+            _fileMessage = file.Name.Split(".")[0] + ".webp";
+            if (!await WEBP.ImgFileCheck(file.Name))
+            {
+                TOAST.ShowError("Incorrect File Upload Type");
+                return;
+            }
+            var oldFileBytes = await AzureStorage.ConvertFileToByteArray(file);
+            var newConvertedFileBytes = await WEBP.WebpConvert(oldFileBytes);
+            _model.Account.ProfilePictureUri = await AzureStorage.UploadFile(_fileMessage, newConvertedFileBytes, _model.Account.UserId);
+            await DB.UpdateAccountAsync(_model.Account);
+            TOAST.ShowSuccess("Image Uploaded Successfully");
+        }
+        catch (Exception ex)
+        {
+            TOAST.ShowError("Image Upload Was Unsuccessful");
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Encrypts the user's login credentials and copies the encrypted string to their clipboard
+    /// </summary>
+    public async Task GetEncryptedCredentials()
+    {
+        var user = await USER.FindByEmailAsync(_model.Account.Email);
+        var credentials = CRYPT.Encrypt(user.Email, user.PasswordHash);
+        await JS.InvokeVoidAsync("Toast", new[] { !string.IsNullOrEmpty(credentials) ? "success" : "error",
+                                     !string.IsNullOrEmpty(credentials) ? "Copied api secret to clipboard" :
+                                     "Failed to copy api secret.", "1000" });
+        await JS.InvokeAsync<string>("navigator.clipboard.writeText", credentials);
+    }
+
+}

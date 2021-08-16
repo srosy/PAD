@@ -1,0 +1,99 @@
+﻿@page "/projects"
+
+<div class="PageWrapper">
+    @if (_model.Loading)
+    {
+        <Loading />
+    }
+    else
+    {
+        <AuthorizeView>
+            <Authorized>
+                <h1 class="PageHeader">@context.User.Identity.Name.Split("@")[0]'s Projects</h1>
+                <div class="GridContainer">
+                    <form action="/newproject" class="NewProjectContainer">
+                        <div class="NewProjectCaption">New Project</div>
+                        <div class="NewProjectButtonWrapper">
+                            <button type="submit" class="NewProjectButton">
+                                <p>+</p>
+                            </button>
+                        </div>
+                    </form>
+
+                    @if (_projects != null && _projects.Any())
+                    {
+                        @foreach (var project in _projects)
+                        {
+                            <div class="ItemContainer">
+                                <a class="project-a" href="@($"/workspace/{project.ProjectId}")">
+                                    <div class="ItemThumbnailContainer">
+                                        <img class="ItemThumbnail" src="@(project.Data ?? _model.NoImageUrl)" />
+                                    </div>
+                                    <div class="ItemTitle @(!project.UpdateDate.HasValue ? "item-title-no-date" : string.Empty)">
+                                        <div>
+                                            <h2>@project.DisplayTitle</h2>
+                                            @if (project.UpdateDate != null)
+                                            {
+                                                <p>Last Saved: @FormatTime(project.UpdateDate.GetValueOrDefault().ToLocalTime())</p>
+                                            }
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        }
+                    }
+                </div>
+            </Authorized>
+
+            <NotAuthorized>
+                <h1>Must Be Logged In To View Your Saved Projects</h1>
+            </NotAuthorized>
+        </AuthorizeView>
+    }
+</div>
+
+@code {
+
+    private List<Project> _projects;
+    private ProjectsViewModel _model = new ProjectsViewModel();
+
+    protected async override Task OnInitializedAsync()
+    {
+        await Setup();
+    }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _model.Session = new Session(STORAGE, AUTH, USER, DB);
+            _model.Account = await _model.Session.GetAccount();
+            if (_model.Account == null)
+            {
+                await DoneLoading();
+                return;
+            }
+
+            _projects = await DB.GetProjectListAsync(_model.Account.AccountId);
+            await DoneLoading();
+        }
+    }
+
+    private async Task Setup()
+    {
+        _model.BaseImageUrl = COLOR.BASE_IMAGE_URL;
+    }
+
+    private string FormatTime(DateTime? dt)
+    {
+        return String.Format("{0:MMMM dd h:mmtt}", dt);
+    }
+
+    private async Task DoneLoading()
+    {
+        _model.Loading = false;
+        StateHasChanged();
+    }
+
+}
+

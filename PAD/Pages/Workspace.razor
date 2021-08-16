@@ -1,0 +1,567 @@
+﻿@page "/workspace/{projectid}"
+
+<div class="PageWrapper workspace-pagewrapper" @onmouseup="@OnMouseUp">
+    <AuthorizeView>
+        <Authorized Context="Auth">
+            @if (_model.Loading)
+            {
+                <Loading />
+            }
+
+            @if (_model.NotUsersProject && !_model.Loading)
+            {<h1>Tsk...Tsk...Tsk! trying to work on someone else's project!</h1> }
+            else if (!_model.HasProjects && !_model.Loading)
+            {
+                <h1>Whoops! You don't have any projects!</h1>
+                <a class="btn btn-primary" href="/newproject">Create New Project</a>
+            }
+            else
+            { <h1 class="WorkspaceHeader">Project Workspace</h1>}
+            <div class="WorkspaceGrid" @oncontextmenu:preventDefault="true">
+                <div class="LefthandToolbar Toolbar">
+                    @if (!_model.Loading)
+                    {
+                        <PalletteEditor @bind-Color="@_model.SelectedColor"
+                                        @bind-ProjectID="@projectid"
+                                        OnNavigation="SaveBeforeNavigating"
+                                        @bind-AltColor="@_model.AltSelectedColor"
+                                        Context="@_model.Context" />
+                        <div class="row">
+                            <div class="btn-group m-3">
+                                <div class="col-md-12">
+                                    <label class="text-white">Primary: </label>
+                                    <Colorpicker @bind-Color="@_model.SelectedColor" Context="@_model.Context" />
+                                    &nbsp;
+                                    <label class="text-white">Secondary: </label>
+                                    <Colorpicker @bind-Color="@_model.AltSelectedColor" Context="@_model.Context" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row brush-size">
+                            <div class="col-md-12 pl-4 pr-4">
+                                <MatSlider Id="size-slider"
+                                           @bind-Value="@_model.BrushSize"
+                                           Discrete="true"
+                                           Pin="true"
+                                           Markers="true"
+                                           TValue="int"
+                                           Step="5"
+                                           EnableStep="true"
+                                           ValueMin="0"
+                                           ValueMax="@((int)(_model.Canvas.Height / 8))">
+                                </MatSlider>
+                                <label class="col-form-label-lg text-white">Fill Size: @_model.BrushSize</label>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="ArtGrid">
+                    @*https://developer.mozilla.org/en-US/docs/Web/HTML/Element/canvas*@
+                    <div id="canvas"
+                         class="canvas-wrapper @_model.PointerClass"
+                         @onmousedown="OnMouseDown"
+                         @onmousemove="@OnMouseMove"
+                         @oncontextmenu:preventDefault="true">
+                        <BECanvas Width="_model.NumGridCols > 0 ? _model.NumGridCols : _model.DefaultNumGridCols"
+                                  Height="_model.NumGridRows > 0 ? _model.NumGridRows : _model.DefaultNumGridRows"
+                                  @ref="_model.Canvas">
+                        </BECanvas>
+                    </div>
+                </div>
+                <div class="RighthandToolbar Toolbar">
+                    <div class="row">
+                        <div class="col-md-12 text-center mb-2">
+                            <label class="col-form-label-lg text-white">Tools:</label>
+                            <RadzenDropDown AllowClear="false"
+                                            TValue="PointerType"
+                                            Style="width:200px; vertical-align: middle; cursor: pointer;"
+                                            Data=@(Enum.GetValues(typeof(PointerType)))
+                                            @bind-Value="_model.CurrentPointer"
+                                            Change=@(args => OnPointerChange(args)) />
+                        </div>
+                    </div>
+                    <div class="ToolContextMenuContainer text-center">
+                        @switch (_model.CurrentPointer)
+                        {
+                            case PointerType.BRUSH:
+                                <div class="BrushShape-Container mb-4">
+                                    <strong class="col-form-label-lg text-white BrushShape-Label">Current Selected Drawing Shape: @_model.SelectedBrushShape</strong><br /><br />
+                                    <a href="javascript:void(0)" class="btn btn-primary btn-lg BrushShape-Option zoom-15 text-white m-2" @onclick="() => UpdateBrushShapeSquare()"><img src="https://pixelartdesigner.blob.core.windows.net/images/square.ico" />&nbsp;Square</a><br />
+                                    <a href="javascript:void(0)" class="btn btn-primary btn-lg BrushShape-Option zoom-15 text-white m-2" @onclick="() => UpdateBrushShapeTriangle()"><img src="https://pixelartdesigner.blob.core.windows.net/images/triangle.ico" />&nbsp;Triangle</a><br />
+                                    <a href="javascript:void(0)" class="btn btn-primary btn-lg BrushShape-Option zoom-15 text-white m-2" @onclick="() => UpdateBrushShapeCircle()"><img src="https://pixelartdesigner.blob.core.windows.net/images/circle.ico" />&nbsp;Circle</a><br />
+                                </div>
+                                break;
+
+                            case PointerType.STAMP:
+                                <div class="StampMenu">
+                                    @foreach (var stamp in Enum.GetValues(typeof(StampType)))
+                                    {
+
+                                        if ((StampType)stamp == _model.CurrentStamp)
+                                        {
+                                            <div class="StampItemContainer" @onclick="(() => SetCurrentStamp((StampType)stamp))">
+                                                <img class="SelectedStampIcon" src="/images/@(stamp + ".webp")" />
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="StampItemContainer" @onclick="(() => SetCurrentStamp((StampType)stamp))">
+                                                <img class="StampIcon" src="/images/@(stamp + ".webp")" />
+                                            </div>
+                                        }
+
+                                    }
+                                </div>
+                                break;
+
+                            case PointerType.TRANSFORMATIONS:
+                                <div class="TransformationContainer">
+                                    <div class="TransformationOption" @onclick="(() => HandleCanvasRotate(false))"><span class="TransformationOptionSpan">⟲</span></div>
+                                    <div class="TransformationOption" @onclick="(() => HandleCanvasRotate(true))"><span class="TransformationOptionSpan">⟳</span></div>
+                                    <div class="TransformationOption" @onclick="(() => HandleCanvasFlip(true))"><span class="TransformationOptionSpan">⇄</span></div>
+                                    <div class="TransformationOption" @onclick="(() => HandleCanvasFlip(false))"><span class="TransformationOptionSpan">⇅</span></div>
+                                </div>
+                                break;
+                        }
+                    </div>
+                    @if (!_model.Loading)
+                    {
+                        <div class="row">
+                            <div class="col-md-12 text-center gridsize-Container">
+                                <h4 class="text-center">Current Grid Size: @_model.Project.GridSize</h4>
+                                <button type="button" class="w-button change-grid-size mb-4" @onclick="Show" style="font-size:1.1em; margin-bottom: 1vh;">Change Grid Size</button>
+                                <div class="gridsize-slider-container" hidden="@_model.isShow">
+                                    <EditForm Model="@_model.Project" OnValidSubmit="@UpdateGridSize">
+                                        <DataAnnotationsValidator />
+                                        <div class="ValidationWrapper">
+                                            <ValidationSummary />
+                                        </div>
+                                        <div class="NewProjectForm">
+                                            <label class="FieldLabel text-white" for="Name">Grid Size (rows x cols): </label>
+                                            <InputText id="Name"
+                                                       class="form-control InputField"
+                                                       @bind-Value="_model.Project.GridSize"
+                                                       placeholder="Must be in 5x5, 25x25 ... 100x100 format" />
+                                            <button type="submit" class="w-button grid-size-update-button">Update</button>
+                                        </div>
+                                    </EditForm>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <button type="button" class="w-button" @onclick="Clear">Clear</button>
+                            <button id="reset" type="button" title="Reset to the last saved state." class="w-button" @onclick="Reset">Reset</button>
+                        </div>
+                    </div>
+                    <div class="btn-group m-3">
+                        <button type="button" class="w-button" @onclick="SaveProject">Save</button>
+                        <button type="button" class="w-button" @onclick="PublishProject">Publish</button>
+                    </div>
+                    <div class="row pt-2">
+                        <div class="col-md-12">
+                            <iframe src="https://open.spotify.com/embed/album/7lDBDk8OQarV5dBMu3qrdz?si=BwPCkt4PTqumbfo4P5eS7A&dl_branch=1"
+                                    width="300"
+                                    height="80"
+                                    frameborder="0"
+                                    allowtransparency="true"
+                                    allow="encrypted-media">
+                            </iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Authorized>
+        <NotAuthorized>
+            <h1>Login to start your artwork!</h1>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
+
+@code{
+    [Parameter] public string projectid { get; set; } // from uri
+    private WorkspaceViewModel _model = new WorkspaceViewModel();
+
+    #region Init
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _model.Session = new Session(STORAGE, AUTH, USER, DB);
+            _model.Account = await _model.Session.GetAccount();
+            if (_model.Account == null)
+            {
+                await DoneLoading();
+                return;
+            }
+
+            // setup stuff based off of auth and cookie
+            var projects = await BrowserStorage<List<Project>>.GetObject("projects", STORAGE);
+            if (projects != null)
+            {
+                projects = await DB.GetProjectListAsync(_model.Account.AccountId);
+                _model.HasProjects = projects?.Count > 0;
+                if (projects != null && projects.Any())
+                {
+                    // update browser storage
+                    await BrowserStorage<List<Project>>.SaveObject("projects", projects, STORAGE);
+                    int.TryParse(projectid, out var pid);
+                    if (!projects.Any(p => p.ProjectId == pid)) return;
+                    _model.Project = projects.First(p => p.ProjectId == pid);
+                    _model.NotUsersProject = false;
+
+                    // setup
+                    var gridSize = _model.Project.GridSize.ToLower().Split("x");
+                    int.TryParse(gridSize[0], out var rowCount);
+                    _model.NumGridRows = rowCount > 0 ? rowCount * _model.Scale : _model.DefaultNumGridRows;
+                    int.TryParse(gridSize[0], out var colCount);
+                    _model.NumGridCols = colCount > 0 ? colCount * _model.Scale : _model.DefaultNumGridCols;
+                    _model.PointerClass = _model.PointerClasses[PointerType.BRUSH];
+                    _model.SelectedColor = "rgb(68, 58, 110)";
+                    _model.AltSelectedColor = "rgb(0, 0, 0)";
+                    _model.Context = await _model.Canvas.CreateCanvas2DAsync();
+                    await JS.InvokeVoidAsync("restyle");
+                    await DoneLoading();
+                    await _model.Context.SetFillStyleAsync(_model.SelectedColor);
+                    await _model.Context.SetFontAsync("24px Arial");
+                    _model.SelectedBrushShape = "Square";
+                    if (string.IsNullOrEmpty(_model.Project.Data) || !await LoadProjectCanvas()) await Clear(); // clear canvas if new project
+                }
+            }
+            else await DoneLoading();
+        }
+    }
+    private async Task DoneLoading()
+    {
+        await JS.InvokeAsync<string>("setupZoom", _model.Project.Data);
+        _model.Loading = false;
+        StateHasChanged();
+    }
+    #endregion
+
+    #region Helpers
+    private async Task<JObject> GetMouseOffsets() => (JObject)JsonConvert.DeserializeObject(await JS.InvokeAsync<string>("getDivCanvasOffset", _model.Canvas.CanvasReference));
+    private void Show() => _model.isShow = !_model.isShow;
+    private async Task SaveBeforeNavigating() => await SaveProject();
+    private async Task SaveRightClick() => await SaveProject();
+    private void SetCurrentStamp(StampType stamp) => _model.CurrentStamp = stamp;
+    private async Task UpdateGridSize()
+    {
+        try
+        {
+            await DB.UpdateProjectAsync(_model.Project);
+            TOAST.ShowSuccess("Successfully Updated Gride Size to " + _model.Project.GridSize);
+            await SaveProject();
+            NAV.NavigateTo(NAV.Uri, true);
+
+        }
+        catch (Exception e)
+        {
+            TOAST.ShowError("Unable to update gridsize");
+        }
+    }
+    private async Task SetLastMouseLocations(MouseEventArgs eventArgs)
+    {
+        var offsets = await GetMouseOffsets();
+        _model.lastX = eventArgs.ClientX - offsets.Value<double>("offsetLeft");
+        _model.lastY = eventArgs.ClientY - offsets.Value<double>("offsetTop");
+    }
+    private async Task FillRectFromOffsetsAsync(MouseEventArgs eventArgs)
+    {
+        var offsets = await GetMouseOffsets();
+        var mouseX = eventArgs.ClientX - offsets.Value<double>("offsetLeft");
+        var mouseY = eventArgs.ClientY - offsets.Value<double>("offsetTop");
+        await _model.Context.FillRectAsync(mouseX, mouseY, _model.BrushSize, _model.BrushSize);
+    }
+
+    /// <summary>
+    /// Draws with the currently selected brush at the view model's last position, use when frequently called
+    /// </summary>
+    /// <returns></returns>
+    private async Task FillWithBrushShapeAsync()
+    {
+        var fillColor = (_model.leftClick ? _model.SelectedColor : _model.AltSelectedColor);
+        switch (_model.SelectedBrushShape)
+        {
+            case "Square": _model.Context.FillRectAsync(_model.lastX, _model.lastY, _model.BrushSize, _model.BrushSize); break;
+            case "Circle": _model.Context.BeginPathAsync(); _model.Context.SetStrokeStyleAsync(fillColor); _model.Context.ArcAsync(_model.lastX, _model.lastY, _model.BrushSize, 0, 2 * Math.PI); _model.Context.StrokeAsync(); _model.Context.FillAsync(); break;
+            case "Triangle": _model.Context.BeginPathAsync(); _model.Context.SetStrokeStyleAsync(fillColor); _model.Context.MoveToAsync(_model.lastX, _model.lastY); _model.Context.LineToAsync(_model.lastX + _model.BrushSize, _model.lastY); _model.Context.LineToAsync(_model.lastX + (_model.BrushSize / 2), _model.lastY - _model.BrushSize); _model.Context.ClosePathAsync(); _model.Context.StrokeAsync(); _model.Context.FillAsync(); break;
+        }
+    }
+
+    /// <summary>
+    /// Similar to FillWithBrushShapeAsync, but each Async call is awaited, use when infrequently called
+    /// </summary>
+    /// <returns></returns>
+    private async Task FillWithBrushShapeAwaitedAsync()
+    {
+        var fillColor = (_model.leftClick ? _model.SelectedColor : _model.AltSelectedColor);
+        switch (_model.SelectedBrushShape)
+        {
+            case "Square": await _model.Context.FillRectAsync(_model.lastX, _model.lastY, _model.BrushSize, _model.BrushSize); break;
+            case "Circle": await _model.Context.BeginPathAsync(); await _model.Context.SetStrokeStyleAsync(fillColor); await _model.Context.ArcAsync(_model.lastX, _model.lastY, _model.BrushSize, 0, 2 * Math.PI); await _model.Context.StrokeAsync(); await _model.Context.FillAsync(); break;
+            case "Triangle": await _model.Context.BeginPathAsync(); await _model.Context.SetStrokeStyleAsync(fillColor); await _model.Context.MoveToAsync(_model.lastX, _model.lastY); await _model.Context.LineToAsync(_model.lastX + _model.BrushSize, _model.lastY); await _model.Context.LineToAsync(_model.lastX + (_model.BrushSize / 2), _model.lastY - _model.BrushSize); await _model.Context.ClosePathAsync(); await _model.Context.StrokeAsync(); await _model.Context.FillAsync(); break;
+        }
+    }
+
+    /// <summary>
+    /// Clears the canvas.
+    /// </summary>
+    /// <returns></returns>
+    private async Task Clear()
+    {
+        await _model.Context.SetFillStyleAsync("White");
+        await FillCanvas();
+    }
+
+    /// <summary>
+    /// Resets the canvas.
+    /// </summary>
+    /// <returns></returns>
+    private async Task Reset()
+    {
+        if (string.IsNullOrEmpty(_model.Project.Data)) return;
+        await JS.InvokeVoidAsync("setCanvasFromImage", _model.Canvas.CanvasReference, _model.Project.Data);
+    }
+
+    /// <summary>
+    /// Loads the previous project canvas if any.
+    ///</summary>
+    /// <returns></returns>
+    private async Task<bool> LoadProjectCanvas()
+    {
+        if (string.IsNullOrEmpty(_model.Project.Data)) return false;
+        try { await JS.InvokeVoidAsync("setCanvasFromImage", _model.Canvas.CanvasReference, _model.Project.Data); return true; }
+        catch (Exception e) { Console.WriteLine(e.Message); }
+        finally { await JS.InvokeVoidAsync("Toast", new[] { "success", $"Loaded project: {_model.Project.DisplayTitle}", "2000" }); }
+        return false;
+    }
+
+    /// <summary>
+    /// Updates the project with current data.
+    ///</summary>
+    /// <returns></returns>
+    private async Task<bool> SaveProject()
+    {
+        _model.Project.UpdateDate = DateTime.UtcNow;
+        var localUri = await JS.InvokeAsync<string>
+            ("getCanvasUri", _model.Canvas.CanvasReference);
+
+        // use service to save to our
+        var uri = await AzureStorage.UploadFileFromUri(localUri, $"{_model.Project.Name.Replace(".", "")}.png", _model.Account.AccountId, true);
+        _model.Project.Data = uri;
+        var saved = await DB.UpdateProjectAsync(_model.Project);
+        await JS.InvokeVoidAsync("Toast", new[] { saved ? "success" : "error", saved ? "Saved project." : "Failed to save project.", "3000" });
+
+        return saved;
+    }
+
+    /// <summary>
+    /// Publishes a project to become available in the community gallery.
+    ///</summary>
+    /// <returns></returns>
+    private async Task PublishProject()
+    {
+        try
+        {
+            var projSaved = await SaveProject();
+            if (!projSaved)
+            {
+                TOAST.ShowError("Error saving project before publishing.");
+                return;
+            }
+
+            var images = await DB.GetImageListAsync(_model.Account.AccountId);
+            var image = images?.FirstOrDefault(i => i.DeleteDate == null && i.ProjectId == _model.Project.ProjectId);
+            var newImage = false;
+            if (image == null)
+            {
+                newImage = true;
+                image = new PAD.Data.Models.Image()
+                {
+                    CreateDate = DateTime.UtcNow,
+                    AccountId = _model.Account.AccountId,
+                    ProjectId = _model.Project.ProjectId,
+                    ImageId = Guid.NewGuid()
+                };
+            }
+            else image.UpdateDate = DateTime.UtcNow;
+            image.Url = await AzureStorage.PublishImage($"{_model.Project.DisplayTitle}-{_model.Project.ProjectId}.png", _model.Project.Data);
+            if (image.Url == null)
+            {
+                TOAST.ShowError("Failed to save image for project.");
+                return;
+            }
+
+            var published = newImage ? await DB.AddImageAsync(image) : await DB.UpdateImageAsync(image);
+            if (published)
+            {
+                TOAST.ShowSuccess("Published project.");
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
+        TOAST.ShowError("Failed to publish project.");
+    }
+
+    /// <summary>
+    /// Fills the entire canvas with
+    ///</summary>
+    /// <returns></returns>
+    private async Task FillCanvas(double x = 0d, double y = 0d) => await _model.Context.FillRectAsync(x, y, _model.NumGridRows, _model.NumGridCols);
+    #endregion
+
+    #region MouseEvents
+    private async Task OnMouseUp(MouseEventArgs eventArgs) => _model.mouseDown = false;
+    private async Task HandleCanvasFlip(bool horizontal) => await JS.InvokeVoidAsync("flipCanvas", horizontal);
+    private async Task OnMouseMove(MouseEventArgs eventArgs)
+    {
+        if (_model.isDrawing) return;
+        if (!_model.mouseDown) return;
+        await HandleDragDraw(eventArgs);
+    }
+    private async Task HandleDragDraw(MouseEventArgs eventArgs)
+    {
+        _model.isDrawing = true;
+        var data = await JS.InvokeAsync<string>("getDivCanvasOffset", _model.Canvas.CanvasReference);
+        var offsets = (JObject)JsonConvert.DeserializeObject(data);
+        var currentX = eventArgs.ClientX - offsets.Value<double>("offsetLeft");
+        var currentY = eventArgs.ClientY - offsets.Value<double>("offsetTop");
+
+        var deltaX = Math.Abs(currentX - _model.lastX); //measures x change between points
+        var scaleX = _model.lastX < currentX ? 1 : -1; //whether we're incrementing along x positively or negatively
+        var deltaY = Math.Abs(currentY - _model.lastY); //similar to delta x
+        var scaleY = _model.lastY < currentY ? 1 : -1; //similar to scale x
+        var errorMargin = (deltaX > deltaY ? deltaX : -deltaY) / 2; //margin of error, used to adjust line path
+        var error = 0.0; //measure of current line error, or how far from the line's path we are
+        while (_model.lastX != currentX && _model.lastY != currentY)
+        {
+            FillWithBrushShapeAsync();//do not await, allow the line algorithm to continue without waiting on each call
+            error = errorMargin;
+            if (error > -deltaX) { errorMargin -= deltaY; _model.lastX += scaleX; }
+            if (error < deltaY) { errorMargin += deltaX; _model.lastY += scaleY; }
+        }
+
+        // draw the final rect
+        await FillWithBrushShapeAwaitedAsync();
+
+        _model.isDrawing = false;
+    }
+    private async Task OnMouseDown(MouseEventArgs eventArgs)
+    {
+        _model.leftClick = eventArgs.Button == 0;
+        await _model.Context.SetFillStyleAsync(_model.leftClick ? _model.SelectedColor : _model.AltSelectedColor);
+        switch (_model.CurrentPointer)
+        {
+            case PointerType.BRUSH: await HandlePaintBrushClick(eventArgs); return;
+            case PointerType.BUCKET: await HandlePaintBucketClick(eventArgs, _model.leftClick); return;
+            case PointerType.EYEDROPPER: await HandleEyeDropperClick(eventArgs, _model.leftClick); return;
+            case PointerType.STAMP: await HandleStampClick(eventArgs); return;
+            case PointerType.ARROW: return;
+            case PointerType.TRANSFORMATIONS: return;
+            default: return;
+        }
+    }
+
+    /// <summary>
+    /// Handles when the active tool changes.
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    private async Task OnPointerChange(object value)
+    {
+        _model.PointerClass = _model.PointerClasses[(PointerType)value];
+        await JS.InvokeVoidAsync("enableZoom", _model.PointerClass == _model.PointerClasses[PointerType.TRANSFORMATIONS]);
+    }
+
+    /// <summary>
+    /// Handles the canvas click event when set to the paint brush cursor.
+    /// </summary>
+    /// <param name="eventArgs"></param>
+    /// <returns></returns>
+    private async Task HandlePaintBrushClick(MouseEventArgs eventArgs)
+    {
+        _model.mouseDown = true;
+        await SetLastMouseLocations(eventArgs);
+        await FillWithBrushShapeAwaitedAsync();
+        if (_model.Canvas != null && _model.Context != null) await _model.Context.SaveAsync();
+    }
+
+    /// <summary>
+    /// Handles the canvas click event when set to the bucket cursor.
+    ///</summary>
+    /// <returns></returns>
+    private async Task HandlePaintBucketClick(MouseEventArgs eventArgs, bool leftClick)
+    {
+        var offsets = await GetMouseOffsets();
+        var mouseX = eventArgs.ClientX - offsets.Value<double>("offsetLeft");
+        var mouseY = eventArgs.ClientY - offsets.Value<double>("offsetTop");
+        var oldRGB = await JS.InvokeAsync<string>("getColor", mouseX, mouseY);
+        if (leftClick) await JS.InvokeVoidAsync("bucketFill", oldRGB, await COLOR.ConvertHexToRGB(_model.SelectedColor), mouseX, mouseY);
+        else await JS.InvokeVoidAsync("bucketFill", oldRGB, await COLOR.ConvertHexToRGB(_model.AltSelectedColor), mouseX, mouseY);
+        if (_model.Canvas != null && _model.Context != null) await _model.Context.SaveAsync();
+    }
+
+    /// <summary>
+    /// Handles the canvas click event when set to the eyedropper cursor, will change selected color to clicked color
+    /// if leftMouse == true, else secondary color to clicked color
+    /// </summary>
+    /// <param name="eventArgs"></param>
+    /// <param name="leftClick"></param>
+    /// <returns></returns>
+    private async Task HandleEyeDropperClick(MouseEventArgs eventArgs, bool leftClick)
+    {
+        var offsets = await GetMouseOffsets();
+        var mouseX = eventArgs.ClientX - offsets.Value<double>("offsetLeft");
+        var mouseY = eventArgs.ClientY - offsets.Value<double>("offsetTop");
+        if (leftClick)
+        {
+            _model.SelectedColor = await JS.InvokeAsync<string>("getColor", mouseX, mouseY);
+            await _model.Context.SetFillStyleAsync(_model.SelectedColor);
+            return;
+        }
+        _model.AltSelectedColor = await JS.InvokeAsync<string>("getColor", mouseX, mouseY);
+        await _model.Context.SetFillStyleAsync(_model.AltSelectedColor);
+    }
+
+    private async Task HandleStampClick(MouseEventArgs eventArgs)
+    {
+        var offsets = await GetMouseOffsets();
+        var mouseX = eventArgs.ClientX - offsets.Value<double>("offsetLeft");
+        var mouseY = eventArgs.ClientY - offsets.Value<double>("offsetTop");
+        await JS.InvokeVoidAsync("placeStamp", mouseX, mouseY, _model.CurrentStamp.ToString(), _model.BrushSize);
+    }
+
+    /// <summary>
+    /// Calls the rotateCanvas JS method, passing along whether the rotation is clockwise or
+    /// counter-clockwise
+    /// </summary>
+    /// <param name="clockwise"></param>
+    /// <returns></returns>
+    private async Task HandleCanvasRotate(bool clockwise)
+    {
+        await JS.InvokeVoidAsync("rotateCanvas", clockwise);
+    }
+
+    public void UpdateBrushShapeSquare()
+    {
+        _model.SelectedBrushShape = "Square";
+    }
+
+    public void UpdateBrushShapeTriangle()
+    {
+        _model.SelectedBrushShape = "Triangle";
+    }
+
+    public void UpdateBrushShapeCircle()
+    {
+        _model.SelectedBrushShape = "Circle";
+    }
+    #endregion
+
+}

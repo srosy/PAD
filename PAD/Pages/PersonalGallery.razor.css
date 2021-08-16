@@ -1,0 +1,19 @@
+﻿.EmptyGalleryWrapper {
+    background-color: #47195D;
+    grid-gap: .75em;
+    padding: 1em;
+    margin: 1em;
+    height: 75vh;
+   display: flex;
+   justify-content: center;
+   align-content: center;
+}
+
+.EmptyGalleryContainer {
+    text-align: center;
+}
+
+.EmptyRedirectLink {
+    font-size: 2em;
+    color: white;
+}

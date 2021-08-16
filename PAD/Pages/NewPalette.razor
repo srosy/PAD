@@ -1,0 +1,116 @@
+﻿@page "/newpalette/{FromWorkspaceId}"
+@page "/newpalette"
+
+<div class="NewPalette-PageWrapper">
+
+    @if (_model.Loading)
+    {
+        <Loading />
+    }
+    else
+    {
+        <AuthorizeView>
+            <Authorized Context="Auth">
+                <h1 class="PageHeader">Create A New Palette</h1>
+                <div class="NewPalette-FormWrapper">
+                    <EditForm Model="@_model.Palette" OnValidSubmit="@CreateNewPalette">
+                        <DataAnnotationsValidator />
+                        <div class="NewPalette-NewForm">
+                            <InputText id="Name"
+                                       class="mt-2 form-control NewPalette-InputField"
+                                       placeholder="Enter Palette Name..."
+                                       @bind-Value="_model.Palette.Name" />
+                            <div class="text-center">
+                                <button type="submit" class="NewPalette-CreateButton">Create New Palette</button>
+                                <div class="NewPalette-ValidationWrapper">
+                                    <ValidationSummary />
+                                </div>
+                            </div>
+                        </div>
+                    </EditForm>
+                    <div class="NewPalette-ColorPickers-Container">
+                        @for (Int32 i = 0; i < 10; i++)
+                        {
+                            var _i = i;
+                            <div class="row NewPalette-row @(i == 0 ? "NewPalette-row-first" : string.Empty)">
+                                <label class="NewPalette-FieldLabel @(i == 0 ? "NewPalette-FieldLabel-First" : string.Empty)">Color @(i + 1):</label>
+                                <RadzenColorPicker @bind-value="@_model.SelectedColorArray[_i]"></RadzenColorPicker>
+                            </div>
+                        }
+                    </div>
+                    <div class="text-center mt-4">
+                        <button type="button"
+                                class="btn btn-dark btn-lg"
+                                @onclick="GoBack">
+                            Back
+                        </button>
+                    </div>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <h1>Must Be Logged In To Create A New Palette</h1>
+            </NotAuthorized>
+        </AuthorizeView>
+    }
+</div>
+
+@code {
+    [Parameter] public string FromWorkspaceId { get; set; } // from url
+    NewPalettetViewModel _model = new NewPalettetViewModel();
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _model.Session = new Session(STORAGE, AUTH, USER, DB);
+            _model.Account = await _model.Session.GetAccount();
+            if (_model.Account == null)
+            {
+                await DoneLoading();
+                return;
+            }
+
+            await DoneLoading();
+        }
+    }
+
+    private async Task DoneLoading()
+    {
+        _model.Loading = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+
+    /// <summary>
+    /// This function is called from the create new palette confirmation button and started by setting the createdate to the current date. It will then
+    /// cycle through the array of selected colors and convert all them into the hexcode format that is needed in the database and in other pages to display
+    /// properly. It is then converted into a single string and added into the database. After it has been added into the database the user is then redirected
+    /// to the last workspace page they were using to continue on their project.
+    /// </summary>
+    /// <returns></returns>
+    private async Task CreateNewPalette()
+    {
+        if (_model.SelectedColorArray.Any(c => string.IsNullOrEmpty(c)))
+        {
+            TOAST.ShowError("Select a color for each box!");
+            return;
+        }
+
+        _model.Palette.AccountId = _model.Account.AccountId;
+        _model.Palette.CreateDate = DateTime.UtcNow;
+        for (int i = 0; i < _model.SelectedColorArray.Length; i++)
+        {
+            _model.SelectedColorArray[i] = await COLOR.ConvertRGB_ToHex(_model.SelectedColorArray[i]);
+            _model.SelectedColorArray[i] = "#" + _model.SelectedColorArray[i];
+        }
+        string colorList = string.Join(",", _model.SelectedColorArray).Trim();
+        _model.Palette.HexCodes = colorList;
+        var paletteAdded = await DB.AddPaletteAsync(_model.Palette);
+        await JS.InvokeVoidAsync("Toast", new[] { paletteAdded ? "success" : "error",
+                                     paletteAdded ? _model.Palette.Name + " Successfully Created!" :
+                                     "Error: " + _model.Palette.Name + " Could Not Be Created.", "3000" });
+        if (paletteAdded) GoBack();
+    }
+
+    private void GoBack() => NAV.NavigateTo("workspace/" + FromWorkspaceId);
+}

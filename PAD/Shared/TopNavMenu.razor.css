@@ -1,0 +1,131 @@
+﻿.NavMenuList {
+    position: fixed;
+    top: 0;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    color: var(--text);
+    background-color: var(--background);
+    list-style-type: none;
+    overflow: hidden;
+    border-bottom: 1vh;
+    border-bottom-color: var(--border);
+    border-bottom-style: solid;
+}
+
+.NavMenuListItem {
+    font-size: 1.75em;
+    float: right;
+}
+
+    .NavMenuListItem button, .NavMenuListItem button:focus, RightmostLink button:focus, .NavMenuListItem button:focus-visible {
+        color: var(--text);
+        background-color: var(--hover);
+        border: none !important;
+        text-decoration: none;
+    }
+
+button.RightmostLink:focus, button.RightmostLink:focus-visible {
+    color: var(--text);
+    background-color: var(--hover);
+    border: none !important;
+}
+
+button.RightmostLink:hover {
+    background-color: var(--hover);
+    color: var(--text);
+    text-decoration: none;
+}
+
+.NavMenuDropDown {
+    width: 12vw;
+    height: 18vh;
+    position: fixed;
+    right: 0vw;
+    top: 5.3vh;
+    font-size: 1.9em;
+    color: var(--text);
+    background-color: var(--background);
+    border-bottom: 1vh solid var(--border);
+    border-left: 1vh solid var(--border);
+    border-right: 1vh solid var(--border);
+}
+
+    .NavMenuDropDown a {
+        padding-top: 1.1vh;
+        padding-bottom: 1.1vh;
+    }
+
+
+    .NavMenuDropDown form, .NavMenuDropDown form:hover, .NavMenuDropDown form:active, .NavMenuDropDown form:focus, .NavMenuDropDown form:target, .NavMenuDropDown form:visited {
+        font-size: .7em;
+        color: var(--text);
+        background-color: var(--background);
+        text-align: center;
+    }
+
+    .NavMenuDropDown button, .NavMenuDropDown button:active, .NavMenuDropDown button:focus, .NavMenuDropDown button:focus-visible, .NavMenuDropDown a, .NavMenuDropDown a:active, .NavMenuDropDown a:focus, .NavMenuDropDown a:focus-visible {
+        font-size: .7em;
+        color: var(--text);
+        width: 11vw !important;
+        background-color: var(--background);
+        border-bottom: .3vh solid var(--border);
+        text-align: center;
+        vertical-align: middle;
+        padding-top: 1.1vh;
+        padding-bottom: 1.1vh;
+    }
+
+        .NavMenuDropDown button, .NavMenuDropDown button:active, .NavMenuDropDown button:focus, .NavMenuDropDown button:focus-visible {
+            font-size: 1em;
+        }
+
+            .NavMenuDropDown button:hover, .NavMenuDropDown a:hover {
+                color: var(--text);
+                background-color: var(--hover);
+            }
+
+.NavLink {
+    color: var(--text);
+    display: inline-block;
+    text-decoration: none;
+}
+
+    .NavLink:hover {
+        background-color: var(--hover);
+        color: var(--text);
+        text-decoration: none;
+    }
+
+.Logo {
+    float: left;
+    display: inline-block;
+}
+
+.LogoImage {
+    height: 2.65em;
+}
+
+.RightmostLink {
+    padding-right: 2vw;
+    padding-left: 1vw;
+    cursor: pointer;
+}
+
+    .RightmostLink:focus, .RightmostLink:focus-visible {
+        padding-right: 2vw;
+        padding-left: 1vw;
+        border: none !important;
+        background-color: var(--background) !important;
+        box-shadow: none !important;
+    }
+
+.OtherLink {
+    padding-right: 1vw;
+    padding-left: 1vw;
+}
+
+.NavMenuBody {
+    z-index: 2;
+    position: absolute;
+}

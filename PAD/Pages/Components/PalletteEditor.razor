@@ -1,0 +1,125 @@
+﻿@page "/paletteEditor";
+@if (_model.Loading)
+{
+    <Loading />
+}
+else
+{
+    <div class="pallette-editor-container">
+        <div class="pallette-editor-header">
+            <h3 class="text-center">Palettes</h3>
+        </div>
+        @if (_model._palettes == null)
+        {
+            <h5>You do not have any palettes</h5>
+        }
+        else
+        {
+            @foreach (var pallette in _model._palettes)
+            {
+                var palletteID = pallette.PalletteId;
+                <div class="row pallete-row">
+                    <div class="col-sm-2">
+                        <div class="IndivualPalletteContainer">
+                            &nbsp;
+                        </div>
+                    </div>
+                    <div class="col-sm-8">
+                        <div class="pallette-squares-container">
+                            @for (int i = 0; i < pallette.HexCodes.Split(",").Length; i++)
+                            {
+                                var hexcode = pallette.HexCodes.Split(",")[i];
+                                <div class="pallete-square zoom-15 pointer" style="background:@hexcode"  @onclick="() => SetColor(hexcode)" @oncontextmenu="() => SetAltColor(hexcode)">
+                                    <a class="pointer" style="color:@hexcode;">#hexval</a>
+                                </div>
+                            }
+                            <div title="@($"Edit Palette: {pallette.Name}")" class="edit-pallette-button" style="cursor: pointer" @onclick="@(() => { NavToEditPalette(palletteID); })"><i class="oi oi-pencil"></i></div>
+                        </div>
+                    </div>
+                </div>
+            }
+            <a @onclick="@(() => { NavToNewPalette(ProjectID); })"><i class="oi oi-plus zoom-15">&nbsp;New Palette</i></a>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public EventCallback<string> ColorChanged { get; set; }
+    [Parameter] public EventCallback<string> AltColorChanged { get; set; }
+    [Parameter] public EventCallback<string> ProjectIDChanged { get; set; }
+    [Parameter] public EventCallback<string> OnNavigation { get; set; }
+
+    [Parameter] public string Color { get; set; }
+    [Parameter] public string AltColor { get; set; }
+    [Parameter] public string ProjectID { get; set; }
+    [Parameter] public Canvas2DContext Context { get; set; }
+
+    private bool _loading = true;
+    private string _baseImagePath;
+    private PalletteEditorViewModel _model = new PalletteEditorViewModel();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _baseImagePath = COLOR.BASE_IMAGE_URL;
+
+        _loading = false;
+        StateHasChanged();
+    }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _model.Session = new Session(STORAGE, AUTH, USER, DB);
+            _model.Account = await _model.Session.GetAccount();
+            if (_model.Account == null)
+            {
+                await DoneLoading();
+                return;
+            }
+            _model._palettes = await DB.GetPaletteListAsync(_model.Account.AccountId);
+            await DoneLoading();
+        }
+    }
+    private async Task DoneLoading()
+    {
+        _model.Loading = false;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// The method called by a pallette item is clicked that communicates to the parent compodent workspace.razor to update the selected color value
+    /// </summary>
+    /// <param name="hexcode"></param>
+    /// <returns></returns>
+    protected async Task SetColor(string hexcode)
+    {
+        Color = hexcode;
+        await Context.SetFillStyleAsync(hexcode);
+        await ColorChanged.InvokeAsync(hexcode);
+    }
+
+    /// <summary>
+    /// The method called by a pallette item when is right clicked that communicates to the parent compodent workspace.razor to update the alt selected color value
+    /// </summary>
+    /// <param name="hexcode"></param>
+    /// <returns></returns>
+    protected async Task SetAltColor(string hexcode)
+    {
+        AltColor = hexcode;
+        await Context.SetFillStyleAsync(hexcode);
+        await AltColorChanged.InvokeAsync(hexcode);
+    }
+
+    public async void NavToEditPalette(int palletteID)
+    {
+        await OnNavigation.InvokeAsync(palletteID.ToString());
+        NAV.NavigateTo("/editpalette/" + palletteID.ToString() + "/" + ProjectID);
+    }
+
+    public async void NavToNewPalette(string projectID)
+    {
+        await OnNavigation.InvokeAsync(projectID);
+        NAV.NavigateTo("/newpalette/" + projectID);
+    }
+}
