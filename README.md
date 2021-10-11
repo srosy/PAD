@@ -9,8 +9,6 @@ Features:
 - Reactions and comments
 - Admin and Client API
 
-This web app was created by Team Duck for CS4450 Summer 2021.
-
 Members: Abyssalisk, Dragon, Duck, Srosy, Zoomin
 
 Tech Stack: Blazor, .NET Core, MSSQL, Azure
